@@ -66,7 +66,16 @@ List<type>::List(const List<type>& list)
 template<class type>
 List<type>::~List()
 {
-	cout << "list dtor" << endl;
+	Node<type>* aux;
+	Node<type>* np;
+
+	np = this->head.next;
+	while(np != nullptr)	
+	{
+		aux = np;
+		np = np->next;	
+		delete aux;
+	}
 }
 
 template<class type>
@@ -82,44 +91,44 @@ Node<type> List<type>::get_head()
 }
 
 template<class type>
-void List<type>::put(Node<type>& node)
+void List<type>::_put(Node<type>* node)
 {
 	Node<type>* last_next;
 	
 	last_next = this->head.next;
-	this->head.next = &node;
-	node.next = last_next;	
+	this->head.next = node;
+	node->next = last_next;	
 	this->size++;
 }
 
 template<class type>
-void List<type>::append(Node<type>& node)
+void List<type>::_append(Node<type>* node)
 {
 	Node<type>* np;
 
 	for(np = &this->head; np->next != nullptr; np = np->next);
-	np->next = &node;
+	np->next = node;
 	this->size++;
 }
 
 template<class type>
-int List<type>::del(const Node<type>& node)
+void List<type>::put(const type& val)
 {
-	Node<type>* last;
-	
-	last = &this->head;
-	for(Node<type>* np = this->head.next; np != nullptr; np = np->next)
-	{
-		if(np == &node)	
-		{
-			last->next = np->next;
-			this->size--;
-			return SUCC;
-		}
-		last = np;
-	}
-	
-	return FAIL;
+	Node<type>* node = new Node<type>(val);
+	this->_put(node);
+}
+
+template<class type>
+void List<type>::append(const type& val)
+{
+	Node<type>* node = new Node<type>(val);
+	this->_append(node);
+}
+
+template<class type>
+bool List<type>::is_empty()
+{
+	return this->get_size() == 0;
 }
 
 template<class type>
@@ -133,7 +142,9 @@ int List<type>::del(const type& val)
 		if(np->val == val)	
 		{
 			last->next = np->next;
+			delete np;
 			this->size--;
+
 			return SUCC;
 		}
 		last = np;
@@ -161,32 +172,7 @@ using namespace ll;
 
 int main()
 {
-	Node<int> node2(3);
-	Node<int> node4 = Node<int>(5);
-	Node<int> node6(33);
-	Node<int> node7(13);
-	List<int> list;
-
-	list.append(node4);
-	list.put(node6);
-	list.put(node2);
-	node2.set_val(-13);
-	list.print();
-	cout << list.del(node6) << endl;
-	cout << list.del(node7) << endl;
-	for(auto it = list.begin(); it != list.end(); ++it)
-		cout << "it: " << (*it) << endl;
-	cout << list.del(-13) << endl;
-	for(auto it = list.begin(); it != list.end(); ++it)
-		cout << "it: " << (*it) << endl;
-	cout << list.del(3333) << endl;
-	list.del(5);
-	list.del(5);
-	list.del(node4);
-	list.print();
-
-	for(auto it = list.begin(); it != list.end(); ++it)
-		cout << (*it) << endl;
+	List<float> list;
 
 	return 0;
 }

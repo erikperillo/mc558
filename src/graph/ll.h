@@ -83,13 +83,12 @@ class List
 	//gets size of list.
 	int get_size();
 	
-	//puts node at the beginning of list.
-	void put(Node<type>& node);
-	//puts node at end of list.
-	void append(Node<type>& node);
-	//deletes node equal to node passed. 
-	//returns a positive number on success.
-	int del(const Node<type>& node);
+	//returns true if empty
+	bool is_empty();
+	//puts value at the beginning of list.
+	void put(const type& val);
+	//puts value at end of list.
+	void append(const type& val);
 	//deletes first occurrence of node with value val.
 	//returns a positive number on success.
 	int del(const type& val);
@@ -99,6 +98,11 @@ class List
 	private:
 	int size;
 	Node<type> head;
+	
+	//puts node at the beginning of list.
+	void _put(Node<type>* node);
+	//puts node at the end of list.
+	void _append(Node<type>* node);
 };
 
 }

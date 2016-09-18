@@ -1,62 +1,75 @@
+/* Copyright 2016 Erik Perillo */
+
 #include <vector>
 #include <iostream>
-#include <map>
 #include <string>
 
-enum
+//colors for depth-first-search (dfs)
+/*enum
 {
 	WHITE,
 	GRAY,
 	BLACK
-};
+};*/
 
+//foward-declaration
 template<class type>
 class Graph;
 
+/*
+Class representing graph vertices.
+Each vertex has an adjacency list of ids. 
+Those ids are the indexes of the vertices to which they connect in graph.
+*/
 template <class type>
 class Vertex
 {
+	//the graph may manipulate private members
 	friend class Graph<type>;
 
 	public:
-	//ctors
-	Vertex()//: id(-1)
+	//constructors
+	Vertex()
 	{;}
-	Vertex(const type& val): val(val)//, id(-1)
+	Vertex(const type& val): val(val)
 	{;}
-	//dtor
+	//destructor
 	~Vertex()
 	{;}
 
+	//two vertices are equal iff their 'val' attribute is equal
 	bool operator==(const Vertex<type>& vertex) const
 	{
 		return this->val == vertex.get_val();
 	}
-
 	bool operator!=(const Vertex<type>& vertex) const
 	{
 		return !this->operator==(vertex);
 	}
 
+	//Returns index of vertex vtx_id in ajdacency list. 
+	//If vtx_id is not present, returns a negative number.
 	int index(int vtx_id) const
 	{
 		for(unsigned i=0; i<this->adj_list.size(); i++)
 			if(this->adj_list[i] == vtx_id)
 				return (int)i;
-
 		return -1;
 	}
 
+	//True if vertex index vtx_id is positive.
 	bool connects(int vtx_id) const
 	{
 		return this->index(vtx_id) >= 0;
 	}
 
+	//Appends vertex index to adjacency list.
 	void add(int vtx_id)
 	{
 		this->adj_list.push_back(vtx_id);
 	}
 
+	//Prints vertex value.
 	void print(bool newline=true) const
 	{
 		std::cout << "V(" << this->val << ")";
@@ -64,74 +77,93 @@ class Vertex
 			std::cout << std::endl;		
 	}
 
+	//Getter for vertex value.
 	type get_val() const
 	{
 		return this->val;
 	}
 
+	//Returns number of vertices to which vertex connects.
 	int n_connections() const
 	{
 		return this->adj_list.size();
 	}
 
+	//Returns i'th vertex id on adjacency list.
 	int operator[](int i) const
 	{
 		return this->adj_list[i];
 	}
-
 	int operator[](int i) 
 	{
 		return this->adj_list[i];
 	}
 
 	private:
+	//value vertex holds
 	type val;
+	//adjacency list
 	std::vector<int> adj_list;
 };
 
+/*
+Class representing an edge, ie, a pair of vertices.
+Connection goes from u to v, that is, first to second vertices passed.
+*/
 template <class type>
 class Edge
 {
 	public:
+	//constructors
 	Edge()
 	{;}
 	Edge(const Vertex<type>& u, const Vertex<type>& v): u(u), v(v)
 	{;}
+	//destructor
 	~Edge()
 	{;}
 
+	//two edges are equal iff their respective vertices are equal
 	bool operator==(const Edge<type>& edge) const
 	{
 		return this->u == edge.get_u() && this->v == edge.get_v();
 	}
-
 	bool operator!=(const Edge<type>& edge) const
 	{
 		return !this->operator==(edge);
 	}
 
+	//getters for vertices
 	Vertex<type> get_u() const
 	{
 		return this->u;
 	}
-
 	Vertex<type> get_v() const
 	{
 		return this->v;
 	}
 	
 	private:
+	//first connection vertex
 	Vertex<type> u;
+	//second connection vertex
 	Vertex<type> v;
 };
 
+//forward declaration
 template <class type>
 void fill_graph(Graph<type>& graph, int num_edges);
 
+/*
+Class representing a graph using adjacency lists.
+Each vertex has an id which is the position it is in graph's list.
+Each vertex adjacency list id refer to the graph ids.
+*/
 template <class type>
 class Graph
 {
 	public:
+	//constructors
 	Graph()
 	{;}
 	Graph(const std::vector<Edge<type> > edges)
@@ -139,11 +171,15 @@ class Graph
 		for(int i=0; i<edges.size(); i++)
 			this->add_edge(edges[i]);
 	}
+	//destructor
 	~Graph()
 	{;}
 
+	//helper function to build graph
 	friend void fill_graph<type>(Graph<type>& graph, int num_edges);
 
+	//Returns index of vertex in graph. 
+	//If it doesn't exist, returns a negative number.
 	int index(const Vertex<type>& vertex) const
 	{
 		for(unsigned i=0; i<this->vertices.size(); i++)
@@ -153,11 +189,13 @@ class Graph
 		return -1;
 	}
 
+	//True if graph has vertex equal to specified.
 	bool has_vertex(const Vertex<type>& vertex) const
 	{
 		return this->index(vertex) >= 0;
 	}
 
+	/*//True if graph has edge specified.
 	bool has_edge(const Edge<type>& edge) const
 	{
 		Vertex<type> u = edge.get_u();
@@ -169,13 +207,15 @@ class Graph
 			return false;
 
 		return this->vertices[u_id].connects(v_id);
-	}
+	}*/
 
+	//Returns number of vertices in graph.
 	int n_vertices() const
 	{
 		return this->vertices.size();
 	}
 	
+	/*//Returns number of edges in graph.	
 	int n_egdes() const
 	{
 		int total = 0;
@@ -184,18 +224,19 @@ class Graph
 			total += this->vertices[i].n_connections();
 
 		return total;
-	}
+	}*/
 
+	//Returns ith vertex in graph.
 	Vertex<type> operator[](int i) const
 	{
 		return this->vertices[i];
 	}
-
 	Vertex<type>& operator[](int i) 
 	{
 		return this->vertices[i];
 	}
 	
+	//Prints all vertices with their adjacencies.
 	void print() const
 	{
 		for(unsigned i=0; i<this->vertices.size(); i++)
@@ -220,9 +261,11 @@ class Graph
 	}
 
 	private:
+	//list of vertices
 	std::vector<Vertex<type> > vertices;
 
 	protected:
+	//functions used to build graph
 	int add_vertex(Vertex<type>& vertex)
 	{
 		int id = this->index(vertex);
@@ -234,7 +277,6 @@ class Graph
 
 		return this->vertices.size() - 1;
 	}
-
 	void add_edge(const Edge<type>& edge)
 	{
 		int u_id, v_id;
@@ -248,8 +290,9 @@ class Graph
 	}
 };
 
-using namespace std;
 
+//Reads from stdin num_edges times, each time getting two vertices and 
+//adding them to graph.
 template <class type>
 void fill_graph(Graph<type>& graph, int num_edges)
 {
@@ -257,8 +300,8 @@ void fill_graph(Graph<type>& graph, int num_edges)
 
 	for(int i=0; i<num_edges; i++)
 	{
-		cin >> u_tp;
-		cin >> v_tp;	
+		std::cin >> u_tp;
+		std::cin >> v_tp;	
 		Vertex<type> u(u_tp);
 		Vertex<type> v(v_tp);
 
@@ -267,14 +310,17 @@ void fill_graph(Graph<type>& graph, int num_edges)
 	}
 }
 
+//DFS-VISIT iterative function.
+//Fills pi with the parents indexes of graph.
 template <class type>
 void _dfs_visit(const Graph<type>& graph, int idx,
-	vector<int>& pi, vector<int>& colors)
+	std::vector<int>& pi, std::vector<bool>& visited)
 {
 	Vertex<type> u = graph[idx];
 	int conn_idx;
 
-	colors[idx] = GRAY;
+	//colors[idx] = GRAY;
+	visited[idx] = true;
 
 	//cout << "[idx=" << idx << "] on vertex "; u.print();
 	//cout << "on adj list..." << endl;
@@ -286,29 +332,35 @@ void _dfs_visit(const Graph<type>& graph, int idx,
 		//graph[conn_idx].print(false);
 		//cout << " | conn_idx = " << conn_idx << endl;
 
-		if(colors[conn_idx] == WHITE)
+		//if(colors[conn_idx] == WHITE)
+		if(!visited[conn_idx])
 		{
 			pi[conn_idx] = idx;
-			_dfs_visit(graph, conn_idx, pi, colors);
+			_dfs_visit(graph, conn_idx, pi, visited);
 		}
 	}
 
 	//cout << "[idx=" << idx << "] END of vertex "; u.print();
-	colors[idx] = BLACK;
+	//colors[idx] = BLACK;
 }
 
+//Performs DFS-VISIT using as root index-th vertex of graph.
+//Returns vector pi, which is the parents vector.
 template <class type>
 std::vector<int> dfs_visit(const Graph<type>& graph, int index)
 {
 	std::vector<int> pi(graph.n_vertices(), -1);
-	std::vector<int> colors(graph.n_vertices(), WHITE);
+	//std::vector<int> colors(graph.n_vertices(), WHITE);
+	std::vector<bool> visited(graph.n_vertices(), false);
 
-	_dfs_visit<type>(graph, index, pi, colors);
+	_dfs_visit<type>(graph, index, pi, visited);
 
 	return pi;
 }
 
-bool contains(const Graph<string>& a, const Graph<string>& b)
+//Returns true if graph b's vertices are all in graph a and false otherwise.
+template <class type>
+bool contains(const Graph<type>& a, const Graph<type>& b)
 {
 	int a_num_vtxs = a.n_vertices();
 	int b_num_vtxs = b.n_vertices();
@@ -323,15 +375,18 @@ bool contains(const Graph<string>& a, const Graph<string>& b)
 	return true;
 }
 
-bool task_2(const Graph<string>& a, const Graph<string>& b)
+//For every edge (u, v) in b, gets a path (if any) from u to v in a.
+//Returns true iff there is a path P and for every w in P - {u,v} w is not in b.
+template <class type>
+bool new_vertices_in_old_connections(const Graph<type>& a, const Graph<type>& b)
 {
 	//the ith position of this vector is true if and only if
 	//a's ith vertex has been checked to be in b
-	vector<bool> checked(a.n_vertices(), false);
+	std::vector<bool> checked(a.n_vertices(), false);
 
-	vector<int> b_a_index_map(b.n_vertices(), -1);
-
-	int a_u_idx, a_v_idx;
+	//mapping from b indexes to a indexes. the vector value at the ith position
+	//-- if not negative -- represents the index of the ith vertex of b in a.
+	std::vector<int> b_a_index_map(b.n_vertices(), -1);
 
 	for(int i=0; i<b.n_vertices(); i++)
 	{
@@ -343,13 +398,13 @@ bool task_2(const Graph<string>& a, const Graph<string>& b)
 
 			if(b_a_index_map[i] < 0)
 				b_a_index_map[i] = a.index(b[i]);
-			a_u_idx = b_a_index_map[i];
+			int a_u_idx = b_a_index_map[i];
 
 			if(b_a_index_map[b[i][j]] < 0)
 				b_a_index_map[b[i][j]] = a.index(b[b[i][j]]);
-			a_v_idx = b_a_index_map[b[i][j]];
+			int a_v_idx = b_a_index_map[b[i][j]];
 
-			vector<int> pi = dfs_visit(a, a_u_idx);
+			std::vector<int> pi = dfs_visit(a, a_u_idx);
 
 			//for(unsigned k=0; k<pi.size(); k++)
 			//	cout << "pi[" << k << "] = " << pi[k] << endl;
@@ -390,14 +445,18 @@ bool task_2(const Graph<string>& a, const Graph<string>& b)
 	return true;
 }
 
+using namespace std;
+
 int main()
 {
 	//the blurred blueprint
 	Graph<string> a;
 	//the old blueprint
 	Graph<string> b;
+	//number of edges
 	int a_num, b_num;
 
+	//reading input and making graphs
 	cin >> b_num;
 	fill_graph(b, b_num);
 	cin >> a_num;
@@ -410,15 +469,13 @@ int main()
 
 	//cout << "-----" << endl;
 
+	//first condition: b vertices must all exist in a
 	if(!contains(a, b))
-	{
 		cout << "NAO" << endl;//"(contains)" << endl;
-		return 0;
-	}
-	else if(!task_2(a, b))
-	{
+	//second condition: paths in a from u to v for (u, v) in b must
+	//have inner vertices only in a
+	else if(!new_vertices_in_old_connections(a, b))
 		cout << "NAO" << endl;//"(task_2)" << endl;
-	}
 	else
 		cout << "SIM" << endl;
 

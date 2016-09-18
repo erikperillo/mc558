@@ -1,36 +1,25 @@
-#include "ll.h"
 #include <iostream>
-
-using namespace std;
-
 
 namespace ll
 {
 
 template <class type>
-Node<type>::Node(): next(nullptr)
-{
-	cout << "node ctor" << endl;	
-}
+Node<type>::Node(): next(NULL)
+{;}
 
 template <class type>
-Node<type>::Node(const type& val): val(val),next(nullptr)
-{
-	cout << "node ctor2" << endl;	
-}
+Node<type>::Node(const type& val): val(val),next(NULL)
+{;}
 
 template <class type>
 Node<type>::Node(const Node<type>& node)
 {
-	cout << "node ctor3" << endl;	
 	*this = node;
 }
 
 template <class type>
 Node<type>::~Node()
-{
-	cout << "node dtor" << endl;	
-}
+{;}
 
 template <class type>
 type Node<type>::get_val()
@@ -52,14 +41,11 @@ Node<type>* Node<type>::get_next()
 
 template<class type>
 List<type>::List(): size(0)
-{
-	cout << "list ctor" << endl;
-}
+{;}
 
 template<class type>
 List<type>::List(const List<type>& list)
 {
-	cout << "list ctor2" << endl;
 	*this = list;
 }
 
@@ -70,7 +56,7 @@ List<type>::~List()
 	Node<type>* np;
 
 	np = this->head.next;
-	while(np != nullptr)	
+	while(np != NULL)	
 	{
 		aux = np;
 		np = np->next;	
@@ -106,7 +92,7 @@ void List<type>::_append(Node<type>* node)
 {
 	Node<type>* np;
 
-	for(np = &this->head; np->next != nullptr; np = np->next);
+	for(np = &this->head; np->next != NULL; np = np->next);
 	np->next = node;
 	this->size++;
 }
@@ -137,7 +123,7 @@ int List<type>::del(const type& val)
 	Node<type>* last;
 	
 	last = &this->head;
-	for(Node<type>* np = this->head.next; np != nullptr; np = np->next)
+	for(Node<type>* np = this->head.next; np != NULL; np = np->next)
 	{
 		if(np->val == val)	
 		{
@@ -156,23 +142,14 @@ int List<type>::del(const type& val)
 template<class type>
 void List<type>::print()
 {
-	cout << "[";
-	for(auto it = this->begin(); it != this->end(); ++it)
+	std::cout << "[";
+	for(List<type>::iterator it = this->begin(); it != this->end(); ++it)
 	{
-		cout << *it;
-		if(it.next() != nullptr)
-			cout << ", ";	
+		std::cout << (*it);
+		if(it.next() != NULL)
+			std::cout << ", ";	
 	}
-	cout << "]" << endl;
+	std::cout << "]" << std::endl;
 }
 
-}
-
-using namespace ll;
-
-int test()
-{
-	List<float> list;
-
-	return 0;
 }

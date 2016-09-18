@@ -56,7 +56,7 @@ class List
 		Node<type>* itr;
 		public:
 		explicit iterator(Node<type>* itr): itr(itr){}
-		iterator(): itr(nullptr){}
+		iterator(): itr(NULL){}
 		iterator& operator++(){itr = itr->next; return *this;}
 		//Node<type>* operator+(int i){Node<type>* itr2 = this->itr;
 		//	for(int j=0; j<i; j++) itr2 = itr2->next; return itr2;}
@@ -69,7 +69,7 @@ class List
 	};
 	//iterator methods
 	iterator begin() {return iterator(this->head.next);}
-	iterator end() {return iterator(nullptr);}
+	iterator end() {return iterator(NULL);}
 
 	//ctors
 	List();
@@ -106,5 +106,8 @@ class List
 };
 
 }
+
+//template file
+#include "ll.tpp"
 
 #endif

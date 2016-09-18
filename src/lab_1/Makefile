@@ -1,4 +1,4 @@
-NAME = graph
+NAME = lab_1
 OBJ = $(NAME).o
 CC = g++
 DEPS = 

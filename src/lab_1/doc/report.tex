@@ -17,7 +17,7 @@
 \usepackage[noend]{algpseudocode}
 \usepackage[T1]{fontenc}
 
-%\addbibresource{report.bib}
+\addbibresource{report.bib}
 
 \newcommand{\fromeng}[1]{\footnote{do inglês: \textit{#1}}}
 \newcommand{\tit}[1]{\textit{#1}}
@@ -79,12 +79,15 @@ Duas condições devem ser satisfeitas para serem da mesma cidade:
 		\begin{algorithmic}[1]
 		\Procedure{Novos-vertices-em-velhas-conexoes}{A, B}
 		\State $\{V_A, E_A\} \gets A, \{V_B, E_B\} \gets B$
+		\State $checked_A \gets \emptyset$
 		\For{$(u, v)$ in $E_B$}
 			\State $\pi =$ DFS-VISIT(A, u)
 			\State $w = \pi\left[v\right]$
 			\If {$w = NULL$} \Return false \EndIf
 			\While{$w \neq u$}
-				\If{$u \in B$} \Return false \EndIf
+				\If{\tbf{not}($w \in checked_A$) \tbf{and} $w \in B$} 
+					\Return false \EndIf
+				\State $checked_A \gets checked_A \cup w$
 				\State $w = \pi\left[w\right]$
 			\EndWhile
 		\EndFor
@@ -102,20 +105,28 @@ e $n_2, m_2$ os mesmos de $A$.
 \subsection{Algoritmo 1}
 O primeiro algoritmo na linha 4 executa $O(n_1)$ vezes a linha 5, que por sua
 vez pode ser implementada em $O(n_2)$. Nas outras linhas, tem tempo constante.
-Assim, sua complexidade assintótica é $O(n_2n_1)$ e, como $n_2 \ge n_1$, temos
-o resultado final de $O(n_{2}^2)$.
+Assim, sua complexidade assintótica é $O(n_2n_1)$. Como todo vértice de $B$ está
+em $A$, $n_2 \ge n_1$ e temos o resultado final de $O(n_{2}^2)$.
 
 \subsection{Algoritmo 2}
-\ttt{DFS-VISIT} na linha 4 executa em $O(m_2)$. O loop da linha 7 é executado 
-em $O(m_2)$ também e a linha 8 pode ser implementada em $O(n_1)$. Todos os
-passos descritos acima acontecem dentro do \tit{loop} da linha 3 que executa 
-em $O(m_1)$. As outras linhas são em $O(1)$. Assim, o tempo de execução é
-$O(m_1\left(m_2 + m_2n_1\right)) = O(m_1m_2 + m_1m_2n_1)$ Sabe-se que há
-limites entre o número de nós e arestas. Por exemplo:
-$$m \le \frac{n^2 - n}{2}, n \le 2m$$
-Sendo m e n o número de arestas e vértices de um grafo simples qualquer.
-Assim, $m_1m_2 + m_1m_2n_1 \le m_1n_{2}^2 + m_1\frac{n_2}{2}n_1 \le 
-m_1n_{2}^2 + m_1n_{2}^2$
+\ttt{DFS-VISIT} na linha 5 leva $O(m_2)$. O loop da linha 8 é executado 
+em $O(m_2)$ também, todos dentro do \tit{loop} da linha 4 que acontece em 
+$O(m_1)$. A checagem da linha 9, salvando-se os resultados prévios
+em $checked_A$, é executada em no máximo $O(n_2)$ por todo o algoritmo e, 
+quando acontece, leva $O(n_1)$.  As outras linhas são em $O(1)$. 
+O tempo total de execução é então $O(m_1(2m_2) + n_1n_2)$.
+Agora, sabe-se que há limites entre o número de nós e arestas:
+$n \le 2m$,
+%$$m \le \frac{n^2 - n}{2}, n \le 2m$$
+sendo m e n o número de arestas e vértices de um grafo simples qualquer.
+Assim, $m_1(2m_2) + n_1n_2 \le m_1n_2 + n_{2}^2$ e então o tempo é 
+$O(m_1n_2 + n_{2}^2)$.
+
+\subsection{Total}
+O tempo total é a soma dos tempos, que dá $O(n_{2}^2 + m_1n_2 + n_{2}^2) = 
+O(m_1n_2 + n_{2}^2)$.
+
+\printbibliography
 
 \end{multicols}
 

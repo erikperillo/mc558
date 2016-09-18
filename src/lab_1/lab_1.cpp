@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 
+#define POSITIVE "SIM"
+#define NEGATIVE "NAO"
+
 //colors for depth-first-search (dfs)
 /*enum
 {
@@ -471,13 +474,13 @@ int main()
 
 	//first condition: b vertices must all exist in a
 	if(!contains(a, b))
-		cout << "NAO" << endl;//"(contains)" << endl;
+		cout << NEGATIVE << endl;//"(contains)" << endl;
 	//second condition: paths in a from u to v for (u, v) in b must
 	//have inner vertices only in a
 	else if(!new_vertices_in_old_connections(a, b))
-		cout << "NAO" << endl;//"(task_2)" << endl;
+		cout << NEGATIVE << endl;//"(task_2)" << endl;
 	else
-		cout << "SIM" << endl;
+		cout << POSITIVE << endl;
 
 	return 0;
 }

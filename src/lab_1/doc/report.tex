@@ -1,0 +1,122 @@
+\documentclass[9pt]{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber]{biblatex}
+\usepackage{csquotes}
+%\usepackage{docmute}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage[bindingoffset=0.2in,%
+            left=0.3in,right=0.3in,top=0.1in,bottom=0.1in,%
+            voffset=-0.5in,footskip=1.5in]{geometry}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[T1]{fontenc}
+
+%\addbibresource{report.bib}
+
+\newcommand{\fromeng}[1]{\footnote{do inglês: \textit{#1}}}
+\newcommand{\tit}[1]{\textit{#1}}
+\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\begin{document}
+
+%\newgeometry{margin=1in}
+
+\author{Erik Perillo, RA135582}
+\date{\today}
+\title{%
+	{\small Projeto e análise de algoritmos II}\\
+	{\huge Laboratório 1 - Blueprints}}
+%\subtitle{Lel}
+\maketitle
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+%\begin{multicols}{2}
+
+\section{Abordagem}
+Dados grafo $B$ (do arquivo morto) e $A$ (nome borrado),
+Duas condições devem ser satisfeitas para serem da mesma cidade:
+\begin{enumerate}
+	\item Todos os vértices de B devem estar em A.
+		Basta fazer uma busca exaustiva como descrita no pseudo-código abaixo:
+		\begin{algorithm}
+		\caption{}\label{euclid}
+		\begin{algorithmic}[1]
+		\Procedure{Contem}{A, B}
+		\State $\{V_A, E_A\} \gets A, \{V_B, E_B\} \gets B$
+		\If {$|V_B| > |V_A|$} \Return false \EndIf
+		\For{v in $V_B$}
+			\If {v $\not\in$ $V_A$} \Return false \EndIf
+		\EndFor
+		\Return true
+		\EndProcedure
+		\end{algorithmic}
+		\end{algorithm}	
+
+	\item Para cada vértice $(u, v)$ em $B$, existe um passeio em 
+		$A$ $P = \{u, w_1,\ldots,w_{n}, v\}$ tal que $\{w_1,\ldots,w_n\}$
+		não estão em $B$.
+		A ideia é checar, para toda aresta $(u, v)$ em $B$, se há um passeio que 
+		satisfaz tais condições. \ttt{DFS-VISIT}~\cite{clrs} 	
+		em $A$ a partir de $u$ pode 
+		ser usado para produzir uma lista $\pi$ de pais. 
+		Checa-se então essa lista, a partir de $v$, indo até $u$ (se existe
+		passeio), verificando se os vértices do meio não estão em $B$.
+			
+		\begin{algorithm}
+		\caption{}\label{euclid}
+		\begin{algorithmic}[1]
+		\Procedure{Novos-vertices-em-velhas-conexoes}{A, B}
+		\State $\{V_A, E_A\} \gets A, \{V_B, E_B\} \gets B$
+		\For{$(u, v)$ in $E_B$}
+			\State $\pi =$ DFS-VISIT(A, u)
+			\State $w = \pi\left[v\right]$
+			\If {$w = NULL$} \Return false \EndIf
+			\While{$w \neq u$}
+				\If{$u \in B$} \Return false \EndIf
+				\State $w = \pi\left[w\right]$
+			\EndWhile
+		\EndFor
+		\Return true
+		\EndProcedure
+		\end{algorithmic}
+		\end{algorithm}	
+\end{enumerate}
+
+\begin{multicols}{2}
+\section{Complexidade}
+Vamos definir $n_1, m_1$ o número de vértices e arestas de $B$, respectivamente,
+e $n_2, m_2$ os mesmos de $A$.
+
+\subsection{Algoritmo 1}
+O primeiro algoritmo na linha 4 executa $O(n_1)$ vezes a linha 5, que por sua
+vez pode ser implementada em $O(n_2)$. Nas outras linhas, tem tempo constante.
+Assim, sua complexidade assintótica é $O(n_2n_1)$ e, como $n_2 \ge n_1$, temos
+o resultado final de $O(n_{2}^2)$.
+
+\subsection{Algoritmo 2}
+\ttt{DFS-VISIT} na linha 4 executa em $O(m_2)$. O loop da linha 7 é executado 
+em $O(m_2)$ também e a linha 8 pode ser implementada em $O(n_1)$. Todos os
+passos descritos acima acontecem dentro do \tit{loop} da linha 3 que executa 
+em $O(m_1)$. As outras linhas são em $O(1)$. Assim, o tempo de execução é
+$O(m_1\left(m_2 + m_2n_1\right)) = O(m_1m_2 + m_1m_2n_1)$ Sabe-se que há
+limites entre o número de nós e arestas. Por exemplo:
+$$m \le \frac{n^2 - n}{2}, n \le 2m$$
+Sendo m e n o número de arestas e vértices de um grafo simples qualquer.
+Assim, $m_1m_2 + m_1m_2n_1 \le m_1n_{2}^2 + m_1\frac{n_2}{2}n_1 \le 
+m_1n_{2}^2 + m_1n_{2}^2$
+
+\end{multicols}
+
+\end{document}

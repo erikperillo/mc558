@@ -1,0 +1,5 @@
+[0] Config.pm:343> INFO - This is Biber 2.5
+[0] Config.pm:346> INFO - Logfile is 'report.blg'
+[53] biber:290> INFO - === Sun Sep 18, 2016, 04:55:52
+[73] Biber.pm:351> INFO - Reading 'report.bcf'
+[208] Utils.pm:149> WARN - No data sources defined!

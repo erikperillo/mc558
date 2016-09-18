@@ -1,4 +1,4 @@
-\documentclass[9pt]{article}
+\documentclass[7pt]{article}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{amsmath}
@@ -14,6 +14,7 @@
             left=0.3in,right=0.3in,top=0.1in,bottom=0.1in,%
             voffset=-0.5in,footskip=1.5in]{geometry}
 \usepackage{algorithm}
+\usepackage{titling}
 \usepackage[noend]{algpseudocode}
 \usepackage[T1]{fontenc}
 
@@ -26,17 +27,21 @@
 
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
+\setlength{\intextsep}{1.5pt}
+%\setlength{\textfloatsep}{-1in}
+
 \begin{document}
 
 %\newgeometry{margin=1in}
 
 \author{Erik Perillo, RA135582}
 \date{\today}
-\title{%
+\title{%\vspace{-2cm}%
 	{\small Projeto e análise de algoritmos II}\\
-	{\huge Laboratório 1 - Blueprints}}
+	{\Large Laboratório 1 - Blueprints}}
 %\subtitle{Lel}
-\maketitle
+\maketitle\vspace{-1.3cm}
+\posttitle{\par\end{center}}
 
 \makeatletter
 \def\BState{\State\hskip-\ALG@thistlm}
@@ -67,34 +72,47 @@ Duas condições devem ser satisfeitas para serem da mesma cidade:
 	\item Para cada vértice $(u, v)$ em $B$, existe um passeio em 
 		$A$ $P = \{u, w_1,\ldots,w_{n}, v\}$ tal que $\{w_1,\ldots,w_n\}$
 		não estão em $B$.
-		A ideia é checar, para toda aresta $(u, v)$ em $B$, se há um passeio que 
-		satisfaz tais condições. \ttt{DFS-VISIT}~\cite{clrs} 	
-		em $A$ a partir de $u$ pode 
-		ser usado para produzir uma lista $\pi$ de pais. 
-		Checa-se então essa lista, a partir de $v$, indo até $u$ (se existe
-		passeio), verificando se os vértices do meio não estão em $B$.
+		A ideia então é fazer uma busca em profundidade~\cite{clrs}
+		para toda aresta $(u, v) \in B$ de $u$ até o possível momento em que 
+		o vértice $v$ seja alcançado, sempre checando se os vértices na
+		`'jornada'' não estão em $B$. O pseudo-código a seguir descreve.
 			
 		\begin{algorithm}
 		\caption{}\label{euclid}
 		\begin{algorithmic}[1]
 		\Procedure{Novos-vertices-em-velhas-conexoes}{A, B}
 		\State $\{V_A, E_A\} \gets A, \{V_B, E_B\} \gets B$
-		\State $checked_A \gets \emptyset$
+		%\State $vertexInB_A \gets \emptyset$
 		\For{$(u, v)$ in $E_B$}
-			\State $\pi =$ DFS-VISIT(A, u)
-			\State $w = \pi\left[v\right]$
-			\If {$w = NULL$} \Return false \EndIf
-			\While{$w \neq u$}
-				\If{\tbf{not}($w \in checked_A$) \tbf{and} $w \in B$} 
-					\Return false \EndIf
-				\State $checked_A \gets checked_A \cup w$
-				\State $w = \pi\left[w\right]$
-			\EndWhile
+			\State $visited \gets \emptyset \cup u$
+			\For{$w$ in $Adj_A\left[u\right]$}
+				\If {$\tbf{not}~visited\left[w\right] \tbf{and}$
+					Novos-vertices-em-caminho($w, v, B, visited$)} \Return true 
+				\EndIf
+			\EndFor
 		\EndFor
-		\Return true
+		\Return false
 		\EndProcedure
 		\end{algorithmic}
 		\end{algorithm}	
+
+		\begin{algorithm}
+		\caption{}\label{euclid}
+		\begin{algorithmic}[1]
+		\Procedure{Novos-vertices-em-caminho}{u, v, B, visited}
+		\State $visited\left[u\right] \gets true$
+		\If{u = v} \Return true \EndIf
+		\If{$u \in B$} \Return false \EndIf
+		\For{$w$ in $Adj_A\left[u\right]$}
+			\If {$\tbf{not}~visited\left[w\right] \tbf{and}$
+				Novos-vertices-em-caminho($w, v, B, visited$)} \Return true 
+			\EndIf
+		\EndFor
+		\Return false
+		\EndProcedure
+		\end{algorithmic}
+		\end{algorithm}	
+
 \end{enumerate}
 
 \begin{multicols}{2}
@@ -108,23 +126,25 @@ vez pode ser implementada em $O(n_2)$. Nas outras linhas, tem tempo constante.
 Assim, sua complexidade assintótica é $O(n_2n_1)$. Como todo vértice de $B$ está
 em $A$, $n_2 \ge n_1$ e temos o resultado final de $O(n_{2}^2)$.
 
-\subsection{Algoritmo 2}
-\ttt{DFS-VISIT} na linha 5 leva $O(m_2)$. O loop da linha 8 é executado 
-em $O(m_2)$ também, todos dentro do \tit{loop} da linha 4 que acontece em 
-$O(m_1)$. A checagem da linha 9, salvando-se os resultados prévios
-em $checked_A$, é executada em no máximo $O(n_2)$ por todo o algoritmo e, 
-quando acontece, leva $O(n_1)$.  As outras linhas são em $O(1)$. 
-O tempo total de execução é então $O(m_1(2m_2) + n_1n_2)$.
+\subsection{Algoritmos 2 e 3}
+O \tit{loop} da linha 3 do algoritmo 2 é executado no máximo $m_1$ vezes.
+O algoritmo 3 é executado no máximo uma vez para cada vértice de $A$ 
+(pois depois o vértice é marcado como visitado), passando por suas adjacências. 
+Assim, o tempo total passado chamando o Algoritmo 3 é 
+$\sum\nolimits_{v \in A}{d(v)} = O(m_2)$ para cada iteração da linha 3 do 
+algoritmo 2.
+A checagem da linha 4 do algoritmo 3 pode ser guardada, sendo executada
+no máximo $n_2$ vezes, levando $n_1$ quando acontece, tendo como tempo
+$O(n_2n_1)$.
+O total então é $O(m_1m_2 + n_1n_2)$.
 Agora, sabe-se que há limites entre o número de nós e arestas:
-$n \le 2m$,
-%$$m \le \frac{n^2 - n}{2}, n \le 2m$$
-sendo m e n o número de arestas e vértices de um grafo simples qualquer.
-Assim, $m_1(2m_2) + n_1n_2 \le m_1n_2 + n_{2}^2$ e então o tempo é 
-$O(m_1n_2 + n_{2}^2)$.
+$m \le \frac{n^2 - n}{2}$, m e n o número de arestas e vértices de um grafo 
+simples. Assim, $m_1m_2 + n_1n_2 \le m_1n_{2}^2 + 2n_{2}^2, (n \ge 0)$
+E o tempo é então $O(m_1n_{2}^2)$.
 
 \subsection{Total}
-O tempo total é a soma dos tempos, que dá $O(n_{2}^2 + m_1n_2 + n_{2}^2) = 
-O(m_1n_2 + n_{2}^2)$.
+O tempo total é a soma dos tempos, que dá $O(n_{2}^2 + m_1n_{2}^2) = 
+O(m_1n_{2}^2)$.
 
 \printbibliography
 

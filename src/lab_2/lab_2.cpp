@@ -389,7 +389,7 @@ DFSResults dfs(const Graph<type>& graph)
 template <class type>
 void _get_paths(const Graph<type>& graph, const DFSResults& dfs_res, int idx,
 	std::vector<int>& g_paths, std::vector<int>& y_paths, 
-	std::vector<int>& r_paths, int end_idx)
+	std::vector<int>& r_paths)
 {
 	int u_idx;
 	int v_idx;
@@ -403,15 +403,14 @@ void _get_paths(const Graph<type>& graph, const DFSResults& dfs_res, int idx,
 		switch(graph.edge_color(u_idx, v_idx))
 		{
 			case GREEN:
-				g_paths[u_idx] += (v_idx == end_idx)?1:\
-					(g_paths[v_idx] + y_paths[v_idx] + r_paths[v_idx]);
+				g_paths[u_idx] += 
+					g_paths[v_idx] + y_paths[v_idx] + r_paths[v_idx];
 				break;
 			case YELLOW:
-				y_paths[u_idx] += (v_idx == end_idx)?1:\
-					(y_paths[v_idx] + g_paths[v_idx]);
+				y_paths[u_idx] += y_paths[v_idx] + g_paths[v_idx];
 				break;
 			case RED:
-				r_paths[u_idx] += (v_idx == end_idx)?1:g_paths[v_idx];
+				r_paths[u_idx] += g_paths[v_idx];
 				break;
 		}	
 	}
@@ -430,8 +429,10 @@ std::vector<int> get_paths(const Graph<type> graph, const DFSResults& dfs_res,
 	std::vector<int> r_paths(dfs_res.top_sort.size(), 0);
 	std::vector<int> paths(dfs_res.top_sort.size(), 0);
 
+	g_paths[end_idx] = 1;
+
 	for(int i=(int)dfs_res.top_sort.size()-1; i>=0; i--)
-		_get_paths(graph, dfs_res, i, g_paths, y_paths, r_paths, end_idx);
+		_get_paths(graph, dfs_res, i, g_paths, y_paths, r_paths);
 
 	for(unsigned i=0; i<paths.size(); i++)
 		paths[i] = g_paths[i] + y_paths[i] + r_paths[i];

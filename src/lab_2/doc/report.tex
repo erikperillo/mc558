@@ -1,0 +1,117 @@
+\documentclass[7pt]{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber]{biblatex}
+\usepackage{csquotes}
+%\usepackage{docmute}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage[bindingoffset=0.0in,%
+            left=0.9in,right=0.9in,top=0.5in,bottom=0.5in,%
+            voffset=0in,footskip=1.5in]{geometry}
+\usepackage{algorithm}
+\usepackage{titling}
+\usepackage[noend]{algpseudocode}
+\usepackage[T1]{fontenc}
+
+\addbibresource{report.bib}
+
+\newcommand{\fromeng}[1]{\footnote{do inglês: \textit{#1}}}
+\newcommand{\tit}[1]{\textit{#1}}
+\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+%\setlength{\intextsep}{1.5pt}
+%\setlength{\textfloatsep}{-1in}
+
+\begin{document}
+
+%\newgeometry{margin=1in}
+
+\author{Erik Perillo, RA135582}
+\date{\today}
+\title{%\vspace{-2cm}%
+	{\small MC558 - Projeto e análise de algoritmos II - Unicamp}\\
+	{\Large Laboratório 2 - Caminhos na vida}}
+%\subtitle{Lel}
+\maketitle\vspace{-0.5cm}
+\posttitle{\par\end{center}}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+%\begin{multicols}{2}
+
+\section{Abordagem}
+O desafio é determinar o número de caminhos seguindo a regra das cores em
+tempo linear no tamanho do grafo. 
+A ideia para isso foi executar um \ttt{topological-sort}~\cite{clrs} e, em
+seguida, do sorvedouro para a fonte, contar os caminhos possíveis para cada
+vértice até o vértice destino \ttt{t}. 
+No final, teremos os caminhos possíveis para cada vértice, inclusive
+o vértice inicial \ttt{s}.
+
+O pseudo-algoritmo a seguir descreve de forma abstraída a ideia.
+\begin{algorithm}
+\caption{}\label{Caminhos-na-vida}
+\begin{algorithmic}[1]
+	\Procedure{Caminhos-na-vida}{G, s, t}
+	\State $\{V, E\} \gets G$
+	\State sort = topological-sort(G)
+	\For{u in $V$}
+		\State $caminhos_{G}[u] \gets 0$
+		\State $caminhos_{Y}[u] \gets 0$
+		\State $caminhos_{R}[u] \gets 0$
+	\EndFor
+	\State $caminhos_{G}[t] \gets 1$
+	\For{u in $sort$ \tbf{in descending order}}
+		\For{(u, v) in Adj[u]}
+			\If{(u, v) é verde} 
+				$caminhos_{G}[u] \gets caminhos_{G}[u] + 
+				caminhos_{G}[v] + caminhos_{Y}[v] + 
+				caminhos_{R}[v]$ 
+			\EndIf
+			\If{(u, v) é amarelo} 
+				$caminhos_{Y}[u] \gets caminhos_{Y}[u] + 
+				caminhos_{G}[v] + caminhos_{Y}[v]$
+			\EndIf
+			\If{(u, v) é vermelho} 
+				$caminhos_{R}[u] \gets caminhos_{R}[u] + 
+				caminhos_{G}[v]$ 
+			\EndIf
+		\EndFor
+	\EndFor
+	\For{u in $V$}
+		\State $caminhos[u] \gets \sum\nolimits_{c \in \{G,Y,R\}}{caminhos_c[u]}$
+	\EndFor
+	\Return $caminhos[s]$
+	\EndProcedure
+\end{algorithmic}
+\end{algorithm}	
+
+\begin{multicols}{2}
+\section{Complexidade}
+Seja $V$ o número de vértices do grafo e $E$ o número de arestas do mesmo.
+
+A chamada a \ttt{topological-sort} na linha 3 do algoritmo foi implementada
+decentemente e então leva o tempo já conhecido de $O(V + E)$.
+O \tit{loop} da linha 4 leva $O(V)$.
+O \tit{loop} da linha 9 acontece $V$ vezes e o loop da linha 10 é executado
+para cada lista de adjacência do grafo apenas uma vez por vértice, 
+sendo executado então $E$ vezes. 
+Assim, o total de tempo desses loops aninhados é $O(V + E)$.
+O \tit{loop} da linha 14 acontece $V$ vezes.
+O tempo total então é $O(V+E) + O(V) + O(V+E) + O(V)$ o que resulta em $O(V+E)$.
+
+\printbibliography
+
+\end{multicols}
+
+\end{document}

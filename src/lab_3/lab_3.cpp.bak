@@ -351,6 +351,7 @@ Graph<int> fill_graph(int n_lines)
             {
                 double dist = distance(xs[i], ys[i], xs[j], ys[j]);
                 edges.push_back(Edge<int>(vertices[i], vertices[j], dist));
+                edges.push_back(Edge<int>(vertices[j], vertices[i], dist));
             }
 
     return Graph<int>(edges);
@@ -368,13 +369,25 @@ void get_dists(const Graph<type> graph, const std::vector<int>& pi,
         if(pi[i] == NONE)
             continue;
 
-        int v_id = pi[i];
-        double cost = graph[v_id].conn_cost(graph[v_id].index(i));
+        int u_id = pi[i];
+        int v_id = graph[u_id].index(i);
+        double cost = graph[u_id].conn_cost(v_id);
 
         if(cost > fiber_thresh)
             (*fiber_cable) += cost;
         else
             (*normal_cable) += cost;
+
+        /*for(int j=0; j<graph[v_id].n_conns(); j++)
+            if(graph[v_id].conn_vtx(j) == i)
+            {
+                double cost = graph[v_id].conn_cost(j);
+                if(cost > fiber_thresh)
+                    (*fiber_cable) += cost;
+                else
+                    (*normal_cable) += cost;
+                break;
+            }*/
     }
 }
 

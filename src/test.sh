@@ -17,24 +17,33 @@ yes=0
 no=0
 #cmd="valgrind --leak-check=yes "
 cmd=""
+corr=""
+incorr=""
 for test_case in ./$test_dir/*.in; do
 	echo "--- in $test_case ---"
 
 	expected=$(echo $test_case | rev | cut -f1 -d. --complement | rev).res
 
 	echo "program output:"
-	{ $cmd./$(basename $program) < $test_case; } &> $out
+	{ $cmd ./$(basename $program) < $test_case; } &> $out
 	cat -- $out
 
-	[[ -z "$(diff $out $expected)" ]] && yes=$((yes+1)) || no=$((no+1))
+	if [[ -z "$(diff $out $expected)" ]]; then
+        yes=$((yes+1))
+        corr+="$(basename $test_case) "
+    else
+        no=$((no+1))
+        incorr+="$(basename $test_case) "
+    fi
 
 	echo "expected output:"
 	cat $expected
+    #echo
 done
 
 echo
 echo "--- end of tests ---"
 echo
 
-echo "correct results: $yes"
-echo "incorrect results: $no"
+echo "correct results ($yes): $corr"
+echo "incorrect results ($no): $incorr"

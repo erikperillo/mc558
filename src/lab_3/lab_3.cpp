@@ -6,12 +6,20 @@
 #include <queue>
 #include <cmath>
 
+//symbol for 'no parent'
 #define NONE (-1)
+//infinite graph weight symbol
 #define INF (-1)
 
+//true if edge graph weight a is bigger than b
 #define cost_greater(a, b) ((b == INF)?false:((a == INF)?true:(a > b)))
+//rounds float/double to nearest integer
+#define round(x) ((int)floor(x + 0.5))
+//square of x
+#define sqr(x) ((x)*(x))
+//euclidean distence between two points
+#define distance(x1, y1, x2, y2) (sqrt(sqr(x1 - x2) + sqr(y1 - y2)))
 
-using namespace std;
 /*
 Class representing graph vertices.
 Each vertex has an adjacency list of ids.
@@ -40,23 +48,13 @@ class Vertex
         return this->val != vertex.get_val();
     }
 
-	/*//Returns i'th vertex id on adjacency list.
-	int operator[](int i) const
-	{
-		return this->conns_vertices[i];
-	}
-	int operator[](int i)
-	{
-		return this->conns_vertices[i];
-	}*/
-
-    //Returns ith vertex in graph.
+    //Returns ith vertex id in adjacency list.
     int conn_vtx(int i) const
     {
         return this->conns_vertices[i];
     }
 
-    //Returns ith cost in graph.
+    //Returns ith cost of adjacency list.
     double conn_cost(int i) const
     {
         return this->conns_costs[i];
@@ -127,8 +125,11 @@ struct Edge
     ~Edge()
     {;}
 
+    //first vertex
     Vertex<type> u;
+    //second vertex
     Vertex<type> v;
+    //edge weight
     double cost;
 };
 
@@ -195,7 +196,7 @@ class Graph
     }
 
     //Prints all vertices with their adjacencies.
-    void print() //const
+    void print() const
     {
         for(int i=0; i<this->n_vertices(); i++)
         {
@@ -218,13 +219,13 @@ class Graph
     std::vector<Vertex<type> > vertices;
 
     //functions used to build graph. they are only called at construction time.
-    //Adds vertex to graph if its not still in it and returns its index
+    //Adds vertex to graph if its not still in it.
     void add_vertex(const Vertex<type>& vtx)
     {
         if(!this->has_vertex(vtx))
             this->vertices.push_back(vtx);
     }
-    //Adds edge to graph. assumes both vertices are already in graph.
+    //Adds edge to graph. Assumes both vertices are already in graph.
     void add_edge(const Edge<type>& edge)
     {
         int u_id, v_id;
@@ -236,18 +237,9 @@ class Graph
     }
 };
 
-//Squares argument passed.
-double sqr(double x)
-{
-    return x*x;
-}
-
-//Returns euclidean distance between two points.
-double distance(double x1, double y1, double x2, double y2)
-{
-    return sqrt(sqr(x1 - x2) + sqr(y1 - y2));
-}
-
+/*
+Comparer class to be used in heap operations for minimum-spanning tree algoritm.
+*/
 class MSTWeightComp
 {
     public:
@@ -266,6 +258,7 @@ class MSTWeightComp
     std::vector<double>& min_costs;
 };
 
+//Returns a list of vertex indexes that are still in priority queue.
 std::vector<int> in_queue_seq(const std::vector<bool>& in_queue)
 {
     std::vector<int> vec;
@@ -277,15 +270,17 @@ std::vector<int> in_queue_seq(const std::vector<bool>& in_queue)
     return vec;
 }
 
+//Gets minimum spanning tree of graph, rooted in vertex vtx.
+//Returns pi, the parents list.
 template <class type>
-std::vector<int> min_spanning_tree(const Graph<type>& graph, 
+std::vector<int> min_spanning_tree(const Graph<type>& graph,
         const Vertex<type>& vtx)
 {
     //the ith element has the father of the ith vertex in graph in the mst
     //(minimum spanning tree).
     std::vector<int> pi(graph.n_vertices(), NONE);
-    //the ith element has the current smallest distance from ith vertex in
-    //graph to the mst.
+    //the ith element has the current smallest distance from ith vertex
+    //to vertexes in the mst.
     std::vector<double> min_costs(graph.n_vertices(), INF);
     //setting root to have cost zero
     min_costs[graph.index(vtx)] = 0.0;
@@ -296,15 +291,18 @@ std::vector<int> min_spanning_tree(const Graph<type>& graph,
 
     for(int i=0; i<graph.n_vertices(); i++)
     {
-        //simply a vector of indexes of graph
+        //simply a vector of indexes of vertexes still in heap
         std::vector<int> indexes = in_queue_seq(in_queue);
+        //building priority queue
         std::priority_queue<int, std::vector<int>, MSTWeightComp>
             queue(comparer, indexes);
 
+        //getting element with minimum weight to mst.
         int u_id = queue.top();
         queue.pop();
         in_queue[u_id] = false;
 
+        //updating key values
         for(int j=0; j<graph[u_id].n_conns(); j++)
         {
             int v_id = graph[u_id].conn_vtx(j);
@@ -316,12 +314,6 @@ std::vector<int> min_spanning_tree(const Graph<type>& graph,
                 min_costs[v_id] = cost;
             }
         }
-
-        /*while(!queue.empty())
-        {
-            std::cout << queue.top() << ", " << min_costs[queue.top()] << "\n";
-            queue.pop();
-        }*/
     }
 
     return pi;
@@ -331,11 +323,14 @@ std::vector<int> min_spanning_tree(const Graph<type>& graph,
 Graph<int> fill_graph(int n_lines)
 {
     std::vector<Vertex<int> > vertices;
+    //coordinates list
     std::vector<double> xs;
     std::vector<double> ys;
+    //edges to be added to graph
     std::vector<Edge<int> > edges;
     double x, y;
 
+    //reading coordinates
     for(int i=0; i<n_lines; i++)
     {
         std::cin >> x;
@@ -345,6 +340,7 @@ Graph<int> fill_graph(int n_lines)
         vertices.push_back(Vertex<int>(i));
     }
 
+    //making edges with weights as distances
     for(int i=0; i<n_lines; i++)
         for(int j=0; j<n_lines; j++)
             if(i != j)
@@ -356,6 +352,7 @@ Graph<int> fill_graph(int n_lines)
     return Graph<int>(edges);
 }
 
+//Gets quantity of normal and fiber cable to be used from minimum spanning tree.
 template <class type>
 void get_dists(const Graph<type> graph, const std::vector<int>& pi,
         double fiber_thresh, double* normal_cable, double* fiber_cable)
@@ -378,12 +375,8 @@ void get_dists(const Graph<type> graph, const std::vector<int>& pi,
     }
 }
 
-double round(double x)
-{
-    return floor(x + 0.5);
-}
-
-void problem()
+//Solves the problem of getting a full connection of minimum cost.
+void min_cost_full_connection()
 {
     int n_points;
     double fiber_thresh;
@@ -393,8 +386,10 @@ void problem()
     std::cin >> n_points;
     std::cin >> fiber_thresh;
 
+    //building graph from coordinates
     Graph<int> graph = fill_graph(n_points);
-    //graph.print();
+
+    //getting costs for connection
     if(n_points < 2)
     {
         fiber_cost = 0.0;
@@ -406,11 +401,10 @@ void problem()
         get_dists(graph, pi, fiber_thresh, &normal_cost, &fiber_cost);
     }
 
-    cout << round(normal_cost) << " " << round(fiber_cost) << endl;
-    //cout << "normal = " << round(normal_cost/2)
-     //   << ", fiber = " << round(fiber_cost/2) << endl;
+    std::cout << round(normal_cost) << " " << round(fiber_cost) << std::endl;
 }
 
+using namespace std;
 
 int main()
 {
@@ -418,10 +412,7 @@ int main()
 
     cin >> n_test_cases;
     for(int i=0; i<n_test_cases; i++)
-    {
-        //cout << "case " << i << endl;
-        problem();
-    }
+        min_cost_full_connection();
 
     return 0;
 }

@@ -3,7 +3,6 @@
 #include <vector>
 #include <iostream>
 #include <string>
-#include <queue>
 #include <cmath>
 
 //symbol for 'no parent'
@@ -13,279 +12,185 @@
 
 //true if edge graph weight a is bigger than b
 #define cost_greater(a, b) ((b == INF)?false:((a == INF)?true:(a > b)))
+
 //rounds float/double to nearest integer
 #define round(x) ((int)floor(x + 0.5))
+
 //square of x
 #define sqr(x) ((x)*(x))
-//euclidean distence between two points
+//euclidean distance between two points
 #define distance(x1, y1, x2, y2) (sqrt(sqr(x1 - x2) + sqr(y1 - y2)))
 
+//heap macros
+#define heap_parent(i) ((i+1)/2-1)
+#define heap_left(i) (2*(i+1)-1)
+#define heap_right(i) (2*(i+1))
+
 /*
-Class representing graph vertices.
-Each vertex has an adjacency list of ids.
-Those ids are the indexes of the vertices to which they connect in graph.
+Class representing a fully-connected graph.
 */
-template <class type>
-class Vertex
+class FullyConnectedGraph
 {
     public:
     //constructors
-    Vertex()
+    FullyConnectedGraph()
     {;}
-    Vertex(const type& val): val(val)
+    FullyConnectedGraph(int num_vertices):
+        vertices(std::vector<std::vector<double> >
+            (num_vertices, std::vector<double>(num_vertices, 0.0)))
     {;}
     //destructor
-    ~Vertex()
+    ~FullyConnectedGraph()
     {;}
-
-    //two vertices are equal iff their 'val' attribute is equal
-    bool operator==(const Vertex<type>& vertex) const
-    {
-        return this->val == vertex.get_val();
-    }
-    bool operator!=(const Vertex<type>& vertex) const
-    {
-        return this->val != vertex.get_val();
-    }
-
-    //Returns ith vertex id in adjacency list.
-    int conn_vtx(int i) const
-    {
-        return this->conns_vertices[i];
-    }
-
-    //Returns ith cost of adjacency list.
-    double conn_cost(int i) const
-    {
-        return this->conns_costs[i];
-    }
-
-    //Appends vertex index to adjacency list.
-    void add(int vtx_id, double cost)
-    {
-        this->conns_vertices.push_back(vtx_id);
-        this->conns_costs.push_back(cost);
-    }
-
-	//If vtx_id is not present, returns a negative number.
-	int index(int vtx_id) const
-	{
-		for(unsigned i=0; i<this->conns_vertices.size(); i++)
-			if(this->conns_vertices[i] == vtx_id)
-				return (int)i;
-
-		return -1;
-	}
-
-	//True if vertex index vtx_id is positive.
-	bool connects(int vtx_id) const
-	{
-		return this->index(vtx_id) >= 0;
-	}
-
-    //Prints vertex value.
-    void print(bool newline=true) const
-    {
-        std::cout << "V(" << this->val << ")";
-        if(newline)
-            std::cout << std::endl;
-    }
-
-    //Getter for vertex value.
-    type get_val() const
-    {
-        return this->val;
-    }
-
-    //Returns number of vertices to which vertex connects.
-    int n_conns() const
-    {
-        return this->conns_vertices.size();
-    }
-
-    private:
-    //value vertex holds
-    type val;
-    //adjacency list
-    std::vector<int> conns_vertices;
-    //connections weights.
-    std::vector<double> conns_costs;
-};
-
-/*
-Struct representing an edge, ie, a pair of vertices.
-Connection goes from u to v, that is, first to second vertices passed.
-*/
-template <class type>
-struct Edge
-{
-    Edge(const Vertex<type>& u, const Vertex<type>& v, double cost):
-        u(u), v(v), cost(cost)
-    {;}
-    ~Edge()
-    {;}
-
-    //first vertex
-    Vertex<type> u;
-    //second vertex
-    Vertex<type> v;
-    //edge weight
-    double cost;
-};
-
-/*
-Class representing a graph using adjacency lists.
-Each vertex has an id which is the position it is in graph's list.
-Each vertex adjacency list id refer to the graph ids.
-The graph is not dynamic, ie. it doesn't change after construction time.
-*/
-template <class type>
-class Graph
-{
-    public:
-    //constructors
-    Graph()
-    {;}
-    Graph(int num_vertices, const std::vector<Edge<type> >& edges):
-        //vertices(new Vertex<type>[num_vertices]),
-        vertices(std::vector<Vertex<type> >(num_vertices, Vertex<type>())),
-        vertex_present(std::vector<bool>(num_vertices, false))
-    {
-        //adding all vertices
-        for(unsigned i=0; i<edges.size(); i++)
-        {
-            this->add_vertex(edges[i].u);
-            this->add_vertex(edges[i].v);
-        }
-        //making edges
-        for(unsigned i=0; i<edges.size(); i++)
-            this->add_edge(edges[i]);
-    }
-    //destructor
-    ~Graph()
-    {
-        //delete[] this->vertices;
-        ;
-    }
-
-    //Returns index of vertex in graph.
-    //If it doesn't exist, returns a negative number.
-    int index(const Vertex<type>& vtx) const
-    {
-        for(int i=0; i<this->n_vertices(); i++)
-            if(this->vertices[i] == vtx)
-                return i;
-
-        return -1;
-    }
-
-    //True if graph has vertex equal to specified.
-    bool has_vertex(const Vertex<type>& vtx) const
-    {
-        return this->index(vtx) >= 0;
-    }
 
     //Returns number of vertices in graph.
     int n_vertices() const
     {
-        return (int)this->vertex_present.size();//(int)this->vertices.size();
+        return (int)this->vertices.size();
     }
 
-    //Returns ith vertex in graph.
-    Vertex<type> operator[](int i) const
+    //Adds edge to graph. Assumes both vertices are already in graph.
+    void set_edge_cost(int u_id, int v_id, double cost)
     {
-        return this->vertices[i];
+        this->vertices[u_id][v_id] = cost;
     }
-    Vertex<type>& operator[](int i)
+    double get_edge_cost(int u_id, int v_id) const
     {
-        return this->vertices[i];
-    }
-
-    //Prints all vertices with their adjacencies.
-    void print() const
-    {
-        for(int i=0; i<this->n_vertices(); i++)
-        {
-            std::cout << "[" << i << "] ";
-            this->vertices[i].print(false);
-
-            for(int j=0; j<this->vertices[i].n_conns(); j++)
-            {
-                std::cout << " -> ";
-                int v_idx = this->vertices[i].conn_vtx(j);
-                this->vertices[v_idx].print(false);
-            }
-
-            std::cout << std::endl;
-        }
+        return this->vertices[u_id][v_id];
     }
 
     private:
     //list of vertices
-    std::vector<Vertex<type> > vertices;
-    //Vertex<type> * vertices;
-    std::vector<bool> vertex_present;
-
-    //functions used to build graph. they are only called at construction time.
-    //Adds vertex to graph if its not still in it.
-    void add_vertex(const Vertex<type>& vtx)
-    {
-        if(!this->vertex_present[vtx.get_val()])
-        {
-            this->vertices[vtx.get_val()] = vtx;
-            this->vertex_present[vtx.get_val()] = true;
-        }
-    }
-    //Adds edge to graph. Assumes both vertices are already in graph.
-    void add_edge(const Edge<type>& edge)
-    {
-        int u_id, v_id;
-
-        u_id = edge.u.get_val(); //this->index(edge.u);
-        v_id = edge.v.get_val(); //this->index(edge.v);
-
-        this->vertices[u_id].add(v_id, edge.cost);
-    }
+    std::vector<std::vector<double> > vertices;
 };
 
+//Swaps values of x and y.
+void swap(int* x, int* y)
+{
+    int aux = *x;
+    *x = *y;
+    *y = aux;
+}
+
 /*
-Comparer class to be used in heap operations for minimum-spanning tree algoritm.
+Class representing min-heap, to be sorted by keys.
 */
-class MSTWeightComp
+class MinHeapByKey
 {
     public:
-    MSTWeightComp(std::vector<double>& min_costs): min_costs(min_costs)
-    {;}
-    ~MSTWeightComp()
+    //constructor
+    MinHeapByKey(const std::vector<int>& vals, std::vector<double>& keys):
+        vals(vals), keys(keys), positions(std::vector<int>(keys.size(), 0))
+    {
+        this->build_heap();
+        for(unsigned i=0; i<vals.size(); i++)
+            this->positions[vals[i]] = i;
+    }
+    //destructor
+    ~MinHeapByKey()
     {;}
 
-    //true if key with index u_id is greater than key from index v_id.
-    bool operator()(int u_id, int v_id)
+    //True if heap is empty.
+    bool empty()
     {
-        return cost_greater(this->min_costs[u_id], this->min_costs[v_id]);
+        return this->vals_size() == 0;
+    }
+
+    //Returns minimum element, removing it from heap and updating it.
+    int pop()
+    {
+        int ret;
+
+        ret = this->vals[0];
+        this->swap(0, this->vals_size()-1);
+        this->vals.pop_back();
+        this->heapify(0);
+
+        return ret;
+    }
+
+    //Updates pair key, val and updates heap.
+    void update_key(int val, double key_val)
+    {
+        this->keys[val] = key_val;
+        int id = this->positions[val];
+        while(id >= 0 && this->compare(id, heap_parent(id)))
+        {
+            this->swap(id, heap_parent(id));
+            id = heap_parent(id);
+        }
     }
 
     private:
-    std::vector<double>& min_costs;
+    //values
+    std::vector<int> vals;
+    //keys of values
+    std::vector<double> keys;
+    //positions of values in vals vector
+    std::vector<int> positions;
+
+    //Number of elements in heap.
+    int vals_size()
+    {
+        return (int)this->vals.size();
+    }
+
+    //True if key[val[id_1]] < key[val[id_2]].
+    bool compare(int id_1, int id_2)
+    {
+        return cost_greater(this->keys[this->vals[id_2]],
+                this->keys[this->vals[id_1]]);
+    }
+
+    //Swaps val[id_2] with val[id_1], updating its positions.
+    void swap(int id_1, int id_2)
+    {
+        this->positions[this->vals[id_1]] = id_2;
+        this->positions[this->vals[id_2]] = id_1;
+        ::swap(&this->vals[id_1], &this->vals[id_2]);
+    }
+
+    //'floats down' value[id] in heap in order to put it at the right place.
+    void heapify(int id)
+    {
+        int left_id = heap_left(id);
+        int right_id = heap_right(id);
+        int min_id = id;
+
+        if(left_id < this->vals_size() && this->compare(left_id, min_id))
+            min_id = left_id;
+        if(right_id < this->vals_size() && this->compare(right_id, min_id))
+            min_id = right_id;
+
+        if(min_id != id)
+        {
+            this->swap(min_id, id);
+            this->heapify(min_id);
+        }
+    }
+
+    //Makes heap.
+    void build_heap()
+    {
+        for(int i=this->vals_size()/2; i>=0; i--)
+            this->heapify(i);
+    }
 };
 
 //Returns a list of vertex indexes that are still in priority queue.
-std::vector<int> in_queue_seq(const std::vector<bool>& in_queue)
+std::vector<int> seq(int start, int end)
 {
     std::vector<int> vec;
 
-    for(unsigned i=0; i<in_queue.size(); i++)
-        if(in_queue[i])
-            vec.push_back((int)i);
+    for(int i=start; i<=end; i++)
+        vec.push_back(i);
 
     return vec;
 }
 
 //Gets minimum spanning tree of graph, rooted in vertex vtx.
 //Returns pi, the parents list.
-template <class type>
-std::vector<int> min_spanning_tree(const Graph<type>& graph,
-        const Vertex<type>& vtx)
+std::vector<int> min_spanning_tree(const FullyConnectedGraph& graph, int vtx_id)
 {
     //the ith element has the father of the ith vertex in graph in the mst
     //(minimum spanning tree).
@@ -294,35 +199,31 @@ std::vector<int> min_spanning_tree(const Graph<type>& graph,
     //to vertexes in the mst.
     std::vector<double> min_costs(graph.n_vertices(), INF);
     //setting root to have cost zero
-    min_costs[graph.index(vtx)] = 0.0;
+    min_costs[vtx_id] = 0.0;
     //the ith element tells if the ith vertex in graph is in the priority queue.
     std::vector<bool> in_queue(graph.n_vertices(), true);
-    //comparer function for min_heap
-    MSTWeightComp comparer(min_costs);
+    //simply a vector of indexes of vertexes.
+    std::vector<int> indexes = seq(0, graph.n_vertices()-1);
+    //priority queue
+    MinHeapByKey queue(indexes, min_costs);
 
-    for(int i=0; i<graph.n_vertices(); i++)
+    while(!queue.empty())
     {
-        //simply a vector of indexes of vertexes still in heap
-        std::vector<int> indexes = in_queue_seq(in_queue);
-        //building priority queue
-        std::priority_queue<int, std::vector<int>, MSTWeightComp>
-            queue(comparer, indexes);
-
         //getting element with minimum weight to mst.
-        int u_id = queue.top();
-        queue.pop();
+        int u_id = queue.pop();
         in_queue[u_id] = false;
 
         //updating key values
-        for(int j=0; j<graph[u_id].n_conns(); j++)
+        for(int j=0; j<graph.n_vertices(); j++)
         {
-            int v_id = graph[u_id].conn_vtx(j);
-            double cost = graph[u_id].conn_cost(j);
+            int v_id = j;
+            double cost = graph.get_edge_cost(u_id, v_id);
 
             if(in_queue[v_id] && cost_greater(min_costs[v_id], cost))
             {
                 pi[v_id] = u_id;
                 min_costs[v_id] = cost;
+                queue.update_key(v_id, cost);
             }
         }
     }
@@ -331,14 +232,11 @@ std::vector<int> min_spanning_tree(const Graph<type>& graph,
 }
 
 //Reads from stdin coordinates values and builds graph.
-Graph<int> fill_graph(int n_lines)
+FullyConnectedGraph fill_graph(int n_lines)
 {
-    std::vector<Vertex<int> > vertices;
-    //coordinates list
+    FullyConnectedGraph graph(n_lines);
     std::vector<double> xs;
     std::vector<double> ys;
-    //edges to be added to graph
-    std::vector<Edge<int> > edges;
     double x, y;
 
     //reading coordinates
@@ -348,24 +246,21 @@ Graph<int> fill_graph(int n_lines)
         std::cin >> y;
         xs.push_back(x);
         ys.push_back(y);
-        vertices.push_back(Vertex<int>(i));
     }
 
     //making edges with weights as distances
     for(int i=0; i<n_lines; i++)
         for(int j=0; j<n_lines; j++)
-            if(i != j)
-            {
-                double dist = distance(xs[i], ys[i], xs[j], ys[j]);
-                edges.push_back(Edge<int>(vertices[i], vertices[j], dist));
-            }
+        {
+            double dist = distance(xs[i], ys[i], xs[j], ys[j]);
+            graph.set_edge_cost(i, j, dist);
+        }
 
-    return Graph<int>(n_lines, edges);
+    return graph;
 }
 
 //Gets quantity of normal and fiber cable to be used from minimum spanning tree.
-template <class type>
-void get_dists(const Graph<type> graph, const std::vector<int>& pi,
+void get_dists(const FullyConnectedGraph& graph, const std::vector<int>& pi,
         double fiber_thresh, double* normal_cable, double* fiber_cable)
 {
     *normal_cable = 0.0;
@@ -376,8 +271,7 @@ void get_dists(const Graph<type> graph, const std::vector<int>& pi,
         if(pi[i] == NONE)
             continue;
 
-        int v_id = pi[i];
-        double cost = graph[v_id].conn_cost(graph[v_id].index(i));
+        double cost = graph.get_edge_cost(pi[i], i);
 
         if(cost > fiber_thresh)
             (*fiber_cable) += cost;
@@ -398,7 +292,7 @@ void min_cost_full_connection()
     std::cin >> fiber_thresh;
 
     //building graph from coordinates
-    Graph<int> graph = fill_graph(n_points);
+    FullyConnectedGraph graph = fill_graph(n_points);
 
     //getting costs for connection
     if(n_points < 2)
@@ -408,7 +302,7 @@ void min_cost_full_connection()
     }
     else
     {
-        pi = min_spanning_tree(graph, graph[0]);
+        pi = min_spanning_tree(graph, 0);
         get_dists(graph, pi, fiber_thresh, &normal_cost, &fiber_cost);
     }
 

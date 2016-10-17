@@ -5,6 +5,7 @@
 #include <string>
 #include <queue>
 #include <cmath>
+#include <ctime>
 
 //symbol for 'no parent'
 #define NONE (-1)
@@ -398,7 +399,12 @@ void min_cost_full_connection()
     std::cin >> fiber_thresh;
 
     //building graph from coordinates
+    clock_t begin = clock();
     Graph<int> graph = fill_graph(n_points);
+    //graph.print();
+    clock_t end = clock();
+    double secs = (double)(end - begin)/CLOCKS_PER_SEC;
+    std::cout << "fill_graph time: " << secs << " s" << std::endl;
 
     //getting costs for connection
     if(n_points < 2)
@@ -423,7 +429,13 @@ int main()
 
     cin >> n_test_cases;
     for(int i=0; i<n_test_cases; i++)
+    {
+        clock_t begin = clock();
         min_cost_full_connection();
+        clock_t end = clock();
+        double secs = (double)(end - begin)/CLOCKS_PER_SEC;
+        cout << "min_cost_full_connection time: " << secs << " s" << endl;
+    }
 
     return 0;
 }

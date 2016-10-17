@@ -1,0 +1,114 @@
+\documentclass[7pt]{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber]{biblatex}
+\usepackage{csquotes}
+%\usepackage{docmute}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage[bindingoffset=0.0in,%
+            left=0.9in,right=0.9in,top=0.5in,bottom=0.5in,%
+            voffset=0in,footskip=1.5in]{geometry}
+\usepackage{algorithm}
+\usepackage{titling}
+\usepackage[noend]{algpseudocode}
+\usepackage[T1]{fontenc}
+
+\addbibresource{report.bib}
+
+\newcommand{\fromeng}[1]{\footnote{do inglês: \textit{#1}}}
+\newcommand{\tit}[1]{\textit{#1}}
+\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+%\setlength{\intextsep}{1.5pt}
+%\setlength{\textfloatsep}{-1in}
+
+\begin{document}
+
+%\newgeometry{margin=1in}
+
+\author{Erik Perillo, RA135582}
+\date{\today}
+\title{%\vspace{-2cm}%
+	{\small MC558 - Projeto e análise de algoritmos II - Unicamp}\\
+	{\Large Laboratório 3 - Cabos}}
+%\subtitle{Lel}
+\maketitle\vspace{-0.5cm}
+\posttitle{\par\end{center}}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+%\begin{multicols}{2}
+
+\section{Abordagem}
+O desafio é determinar um modo de se conectar todos os pontos de comunicação
+com a mínima quantidade de cabos.
+A ideia é fazer uma conversão para um problema de se achar a árvore geradora
+mínima de um grafo cujas arestas representam um \tit{link} entre dois pontos
+de conexão, com peso igual à distância entre eles.
+Após obtida a árvore, basta contar as distâncias de cabo trançado usadas
+e as distâncias de cabo de fibra.
+
+O pseudo-algoritmo a seguir descreve de forma abstraída a ideia.
+\begin{algorithm}
+\caption{}\label{Cabos}
+\begin{algorithmic}[1]
+	\Procedure{Cabos}{points, fiber-thresh}
+	\For{$p_1, p_2 \in points: p_1 \neq p_2$}
+        \State $(u, v).weight = dist(p_1, p_2)$
+        \State $G = G \cup (u, v)$
+	\EndFor
+    \State $s \gets \ttt{any-vertex(G)}$
+    \State $\pi \gets$ \ttt{PRIM-ALG(G, s)}
+    \State $\ttt{fiber-cost} \gets 0$
+    \State $\ttt{normal-cost} \gets 0$
+    \For{$u \in G: \pi[u] \neq NULL$}
+        \State $cost \gets (\pi[u], u).weight$
+        \If{$cost > \ttt{fiber-thresh}$}
+            \State $\ttt{fiber-cost} \gets \ttt{fiber-cost} + cost$
+        \Else
+            \State $\ttt{normal-cost} \gets \ttt{normal-cost} + cost$
+        \EndIf
+	\EndFor
+    \Return $(\ttt{normal-cost}, \ttt{fiber-cost})$
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{multicols}{2}
+\section{Complexidade}
+Seja $V$ o número de vértices do grafo e $E$ o número de arestas do mesmo.
+
+As linhas 2 a 4 do algoritmo iteram sobre todas as combinações de pontos
+a fim de formar um grafo fortemente conexo. Assim, tem $V^2$ iterações.
+O algoritmo para se obter uma árvore geradora mínima é o algoritmo de
+\tit{Prim}~\cite{clrs}, na linha 6.
+Sua complexidade pode ser $O(E\log{V})$, mas a biblioteca \ttt{STL} de
+\ttt{C++} não se dispõe do método \ttt{DECREASE-KEY} para \ttt{min-heaps},
+o que fez com que se criasse uma nova \ttt{min-heap} a cada iteração
+sobre os vértices ainda na \ttt{min-heap}. Um vetor que guardava se
+certo vértice ainda estava na \ttt{min-heap} foi usado para ajudar 
+nas construções.
+Isso não é tão grave, visto que a criação de uma \ttt{min-heap} leva tempo
+$O(V)$. Assim, a complexidade do algoritmo de \tit{Prim} implementada foi:
+$O(V)$ chamadas a \ttt{build-min-heap}, mantendo as $O(V)$ chamadas a
+\ttt{extract-min} e $O(E)$ \tit{updates} das \tit{keys}.
+Assim, seu tempo total é $O(V^2 + V\log{V} + E)$.
+O \tit{loop} das linhas 9-14 leva $O(V + E)$ (o termo $E$ se devendo ao
+fato que há uma busca pelo peso). O tempo total então é:
+$$O(V^2 + V^2 + V\log{V} + E + V + E) = O(V^2 + V\log{V})$$.
+
+\printbibliography
+
+\end{multicols}
+
+\end{document}

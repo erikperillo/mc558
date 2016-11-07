@@ -50,6 +50,7 @@
 %\begin{multicols}{2}
 
 \section{Abordagem}
+Teste: $\mu$
 O desafio é determinar um modo de se conectar todos os pontos de comunicação
 com a mínima quantidade de cabos.
 A ideia é fazer uma conversão para um problema de se achar a árvore geradora
@@ -63,8 +64,7 @@ O pseudo-algoritmo a seguir descreve de forma abstraída a ideia.
 \caption{}\label{Cabos}
 \begin{algorithmic}[1]
 	\Procedure{Cabos}{points, fiber-thresh}
-    \State $G \gets \ttt{fully-connected-graph(|points|)}$
-	\For{$p_1, p_2 \in points: p_1 \neq p_2$}
+	\For{$p_1, p_2 \in points$}
         \State $(u, v).weight = dist(p_1, p_2)$
         \State $G = G \cup (u, v)$
 	\EndFor
@@ -89,17 +89,17 @@ O pseudo-algoritmo a seguir descreve de forma abstraída a ideia.
 \section{Complexidade}
 Seja $V$ o número de vértices do grafo e $E$ o número de arestas do mesmo.
 
-As linhas 3 a 5 do algoritmo iteram sobre todas as combinações de pontos
+As linhas 2 a 4 do algoritmo iteram sobre todas as combinações de pontos
 a fim de formar um grafo fortemente conexo. Assim, tem $V^2$ iterações.
 O algoritmo para se obter uma árvore geradora mínima é o algoritmo de
-\tit{Prim}~\cite{clrs}, na linha 7.
+\tit{Prim}~\cite{clrs}, na linha 6.
 Ele foi implementado com uma \ttt{MIN-HEAP} comum e então sua
 complexidade é $O(V + V\log{V} + E\log{V})$.
-O \tit{loop} das linhas 10-15 leva $O(V)$.
+O \tit{loop} das linhas 9-14 leva $O(V)$.
 O tempo total então é:
 $O(V^2 + V + V\log{V} + E\log{V} + V) = O(V^2 + V\log{V} + E\log{V}) =
 O(V^2\log{V})$,
-tendo em vista que o grafo é fortemente conexo e então $E = O(V^2)$.
+tendo em vista que o grafo é fortemente conexo ($E = O(V^2)$).
 
 \printbibliography
 

@@ -3,11 +3,14 @@
 #include <vector>
 #include <iostream>
 #include <list>
+#include <queue>
 
 using namespace std;
 
 //default edge cost if no edge is found
 #define DEF_EDGE_COST 0
+//default int value for none
+#define NONE (-1)
 
 //type for adjacency list iterator
 typedef list<pair<int, int> >::const_iterator adj_list_it_t;
@@ -64,7 +67,7 @@ class Graph
     }
 
     //Gets cost of edge (u, v).
-    int edge_cost(int u_id, int v_id) const
+    int get_edge_cost(int u_id, int v_id) const
     {
         adj_list_it_t it;
         for(it=this->nodes[u_id].begin(); it!=this->nodes[u_id].end(); ++it)
@@ -86,10 +89,79 @@ class Graph
         return this->nodes[u_id].end();
     }
 
+    void print() const
+    {
+        adj_list_it_t it;
+
+        for(int i=0; i<this->n_nodes(); i++)
+        {
+            cout << "(" << i << ")";
+            for(it=this->adj_list_begin(i); it!=this->adj_list_end(i); ++it)
+                cout << " -> " << (*it).first << "[" << (*it).second << "]";
+            cout << endl;
+        }
+    }
+
     private:
     //list of nodes
     vector<list<pair<int, int> > > nodes;
 };
+
+struct BFSResults
+{
+    BFSResults(vector<int> pi, vector<int> dists):
+        pi(pi), dists(dists)
+    {;}
+
+    //predecessors tree
+    vector<int> pi;
+    //distances vector
+    vector<int> dists;
+};
+
+BFSResults bfs(const Graph& graph, int src_id)
+{
+    queue<int> q;
+    vector<bool> visited(graph.n_nodes(), false);
+    BFSResults res(
+        vector<int>(graph.n_nodes(), NONE), vector<int>(graph.n_nodes(), NONE));
+
+    res.dists[src_id] = 0;
+    res.pi[src_id] = NONE;
+    visited[src_id] = true;
+
+    q.push(src_id);
+
+    while(!q.empty())
+    {
+        int u_id = q.front();
+        q.pop();
+
+        adj_list_it_t it;
+        for(it=graph.adj_list_begin(u_id); it!=graph.adj_list_end(u_id); ++it)
+        {
+            int v_id = (*it).first;
+
+            if(visited[v_id])
+                continue;
+
+            res.dists[v_id] = res.dists[u_id] + 1;
+            res.pi[v_id] = u_id;
+            visited[v_id] = true;
+
+            q.push(v_id);
+        }
+    }
+
+    return res;
+}
+
+template<class tp>
+void print_vec(const vector<tp> vec)
+{
+    for(unsigned i=0; i<vec.size(); i++)
+        cout << "vec[" << i << "] = " << vec[i] << endl;
+}
 
 int main()
 {
@@ -99,7 +171,8 @@ int main()
     g.add_edge(1, 4, 3);
     g.add_edge(2, 1, 0);
     g.add_edge(1, 3, 23);
-    g.del_edge(1, 2);
+    g.add_edge(2, 8, 23);
+    //g.del_edge(1, 2);
 
     adj_list_it_t it;
     for(it=g.adj_list_begin(1); it!=g.adj_list_end(1); ++it)
@@ -110,6 +183,13 @@ int main()
     cout << g.has_edge(2, 2) << endl;
     cout << g.has_edge(2, 1) << endl;
     cout << g.has_edge(4, 6) << endl;
+
+    g.print();
+    BFSResults bfs_res = bfs(g, 1);
+    cout << "pi:" << endl;
+    print_vec(bfs_res.pi);
+    cout << "dists:" << endl;
+    print_vec(bfs_res.dists);
 
     return 0;
 }

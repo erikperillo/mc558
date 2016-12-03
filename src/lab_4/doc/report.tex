@@ -1,0 +1,101 @@
+\documentclass[7pt]{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber]{biblatex}
+\usepackage{csquotes}
+%\usepackage{docmute}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage[bindingoffset=0.0in,%
+            left=0.9in,right=0.9in,top=0.5in,bottom=0.5in,%
+            voffset=0in,footskip=1.5in]{geometry}
+\usepackage{algorithm}
+\usepackage{titling}
+\usepackage[noend]{algpseudocode}
+\usepackage[T1]{fontenc}
+
+\addbibresource{report.bib}
+
+\newcommand{\fromeng}[1]{\footnote{do inglês: \textit{#1}}}
+\newcommand{\tit}[1]{\textit{#1}}
+\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+%\setlength{\intextsep}{1.5pt}
+%\setlength{\textfloatsep}{-1in}
+
+\begin{document}
+
+%\newgeometry{margin=1in}
+
+\author{Erik Perillo, RA135582}
+\date{\today}
+\title{%\vspace{-2cm}%
+	{\small MC558 - Projeto e análise de algoritmos II - Unicamp}\\
+	{\Large Laboratório 4 - Corrida Maluca}}
+%\subtitle{Lel}
+\maketitle\vspace{-0.5cm}
+\posttitle{\par\end{center}}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+%\begin{multicols}{2}
+
+\section{Abordagem}
+%O desafio é ajudar o Dr. Feynman a fazer um percurso de corredores em um
+%supermercado com uma pontuação abaixo da limite e que tenha o corredor
+%com maior pontuação possível.
+O problema da Corrida Maluca pode ser visto como o de encontrar um caminho
+de $s$ a $t$ em um grafo orientado que tenha o peso não maior que $w_{limit}$
+e com uma aresta de maior peso possível.
+A ideia é checar todas as arestas do grafo procurando pela maior delas que
+satisfaça a restrição de peso de um caminho de $s$ a $t$.
+O menor caminho possível incluindo uma aresta $(u, v)$ é o
+menor caminho de $s$ a $u$ e o menor caminho de $v$ a $t$ ligados pela aresta
+$(u, v)$. Se algum destes caminhos não existir, definimos que o seu peso é
+$\infty$.
+O pseudo algoritmo abaixo explica de forma abstraida a ideia.
+\begin{algorithm}
+\caption{}\label{Cabos}
+\begin{algorithmic}[1]
+    \Procedure{CRAZYRACE}{G, s, t, $w_{limit}$}
+    \State $w_{max} \gets -1$
+    \State $G^T \gets transpose(G)$
+    \State $d_{s} \gets dijkstra(G, s)$
+    \State $d_{t} \gets dijkstra(G^T, t)$
+    \For{$(u, v) \in G$}
+        \State $w \gets (u, v).weight$
+        \If{$w > w_{max}$ \tbf{and} $d_{s}[u] + w + d_{t}[v] \le w_{limit}$}
+            \State $w_{max} \gets w$
+        \EndIf
+	\EndFor
+    \Return $w_{max}$
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{multicols}{2}
+\section{Complexidade}
+O grafo foi implementado como uma lista de adjacências.
+Seja $V$ o número de vértices do grafo e $E$ o número de arestas do mesmo.
+
+A linha 3 do algoritmo consome tempo $O(V + E)$ pois basta cópia dos vértices
+de $G$ com uma passagem pelas arestas.
+O algoritmo de \tit{Dijkstra}~\cite{clrs} nas linhas 4 e 5 consome tempo
+$O((V + E)lg(V))$ pois o mesmo foi implementado com uma \tit{min-heap}.
+O \tit{loop} da linha 6 acontece em $O(V + E)$.
+Assim, temos como tempo total $O(V + E + (V + E)lg(V)) = O((V + E)lg(V))$.
+
+\printbibliography
+
+\end{multicols}
+
+\end{document}

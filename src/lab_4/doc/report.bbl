@@ -1,0 +1,51 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.8 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \sortlist[entry]{nty/global/}
+    \entry{clrs}{book}{}
+      \name{author}{1}{}{%
+        {{hash=f097892f487b813400ea5dcaf120daab}{%
+           family={al.},
+           familyi={a\bibinitperiod},
+           given={Cormen},
+           giveni={C\bibinitperiod},
+           prefix={et},
+           prefixi={e\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {The MIT Press}%
+      }
+      \strng{namehash}{f097892f487b813400ea5dcaf120daab}
+      \strng{fullhash}{f097892f487b813400ea5dcaf120daab}
+      \strng{authornamehash}{f097892f487b813400ea5dcaf120daab}
+      \strng{authorfullhash}{f097892f487b813400ea5dcaf120daab}
+      \field{sortinit}{a}
+      \field{sortinithash}{b685c7856330eaee22789815b49de9bb}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Introduction to Algorithms, 3th ed.}
+      \field{year}{2009}
+      \field{pages}{658\bibrangedash 662}
+      \range{pages}{5}
+    \endentry
+  \endsortlist
+\endrefsection
+\endinput
+

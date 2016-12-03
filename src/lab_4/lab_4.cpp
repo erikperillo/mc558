@@ -283,38 +283,6 @@ DijkstraResults dijkstra(const Graph<int>& graph, int src_id)
     return DijkstraResults(src_id, pi, dists);
 }
 
-//Auxiliar for mark.
-void _mark(Graph<int> graph, int u_id, std::vector<bool>& reachable)
-{
-    reachable[u_id] = true;
-
-    for(int i=0; i<graph.n_connections(u_id); i++)
-    {
-        int v_id = graph.get_connection(u_id, i);
-
-        if(!reachable[v_id])
-            _mark(graph, v_id, reachable);
-    }
-}
-
-//Marks every node in graph that are acessible via the root.
-std::vector<bool> mark(const Graph<int>& graph, int root_id)
-{
-    //the ith' element is true iff it is reachable from root
-    std::vector<bool> reachable(graph.n_vertices(), false);
-    reachable[root_id] = true;
-
-    for(int i=0; i<graph.n_connections(root_id); i++)
-    {
-        int v_id = graph.get_connection(root_id, i);
-
-        if(!reachable[v_id])
-            _mark(graph, v_id, reachable);
-    }
-
-    return reachable;
-}
-
 //Returns transposed graph.
 Graph<int> transpose(const Graph<int>& graph)
 {
@@ -338,25 +306,21 @@ Graph<int> transpose(const Graph<int>& graph)
 }
 
 //max_edge_w_limited_path auxiliar.
-int _max_edge_w_limited_path(const Graph<int>& t_graph,
+int _max_edge_w_limited_path(const Graph<int>& graph,
     int path_w_limit,
-    const std::vector<bool>& reachable,
     const std::vector<int>& graph_dists, const std::vector<int>& t_graph_dists)
 {
     int max_edge_w = -1;
 
-    for(int i=0; i<t_graph.n_vertices(); i++)
+    for(int i=0; i<graph.n_vertices(); i++)
     {
         int u_id = i;
 
-        if(!reachable[u_id])
-            continue;
-
-        for(int j=0; j<t_graph.n_connections(u_id); j++)
+        for(int j=0; j<graph.n_connections(u_id); j++)
         {
-            int v_id = t_graph.get_connection(u_id, j);
-            int edge_w = t_graph.get_edge_cost(u_id, v_id);
-            int path_w = graph_dists[v_id] + edge_w + t_graph_dists[u_id];
+            int v_id = graph.get_connection(u_id, j);
+            int edge_w = graph.get_edge_cost(u_id, v_id);
+            int path_w = graph_dists[u_id] + edge_w + t_graph_dists[v_id];
 
             if(edge_w > max_edge_w && path_w <= path_w_limit)
                 max_edge_w = edge_w;
@@ -373,15 +337,11 @@ int max_edge_w_limited_path(const Graph<int>& graph,
 {
     //transposed graph
     Graph<int> t_graph = transpose(graph);
-    //reachable nodes
-    std::vector<bool> reachable = mark(graph, src_id);
     //shortest paths of graph and transposed graph
     DijkstraResults res = dijkstra(graph, src_id);
     DijkstraResults t_res = dijkstra(t_graph, dst_id);
 
-    return _max_edge_w_limited_path(t_graph,
-        path_w_limit,
-        reachable,
+    return _max_edge_w_limited_path(graph, path_w_limit,
         res.dists, t_res.dists);
 }
 

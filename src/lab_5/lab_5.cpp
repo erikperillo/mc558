@@ -107,6 +107,13 @@ class Graph
     vector<list<pair<int, int> > > nodes;
 };
 
+void swap(int* x, int* y)
+{
+    int aux = *x;
+    *x = *y;
+    *y = aux;
+}
+
 struct BFSResults
 {
     BFSResults(vector<int> pi, vector<int> dists):
@@ -156,40 +163,132 @@ BFSResults bfs(const Graph& graph, int src_id)
     return res;
 }
 
+Graph residual_net(Graph& flow, const Graph& caps)
+{
+    Graph res_net = Graph(flow.n_nodes());
+
+    for(int u_id=0; u_id<caps.n_nodes(); u_id++)
+    {
+        adj_list_it_t it;
+        for(it=caps.adj_list_begin(u_id); it!=caps.adj_list_end(u_id); ++it)
+        {
+            int v_id = (*it).first;
+            int cap = (*it).second;
+            int flux = flow.get_edge_cost(u_id, v_id);
+
+            if(cap - flux > 0)
+                res_net.add_edge(u_id, v_id, cap - flux);
+            if(flux > 0)
+                res_net.add_edge(v_id, u_id, flux);
+        }
+    }
+
+    return res_net;
+}
+
+int residual_capacity(const Graph& res_net,
+    vector<int> pi, int src_id, int dst_id)
+{
+    int v_id = dst_id;
+    int res_cap = res_net.get_edge_cost(pi[dst_id], dst_id);
+
+    //getting residual capacity
+    for(v_id=pi[v_id]; v_id!=src_id; v_id=pi[v_id])
+    {
+        int cap = res_net.get_edge_cost(pi[v_id], v_id);
+        if(cap < res_cap)
+            res_cap = cap;
+    }
+
+    return res_cap;
+}
+
+//assumes there is such path.
+void augment_flow(Graph& flow, const Graph& res_net,
+        const vector<int> pi, int src_id, int dst_id)
+{
+    int res_cap;
+
+    //getting residual capacity
+    res_cap = residual_capacity(res_net, pi, src_id, dst_id);
+
+    for(int v_id=dst_id; v_id!=src_id; v_id=pi[v_id])
+    {
+        int u_id = pi[v_id];
+        int curr_flow;
+        bool rev = false;
+
+        if(flow.has_edge(v_id, u_id))
+        {
+            swap(&u_id, &v_id);
+            rev = true;
+        }
+
+        curr_flow = flow.get_edge_cost(u_id, v_id);
+        flow.del_edge(u_id, v_id);
+        flow.add_edge(u_id, v_id, curr_flow + (rev?(-res_cap):res_cap));
+    }
+}
+
 template<class tp>
-void print_vec(const vector<tp> vec)
+void print_vec(const vector<tp> vec, const string& prefix="")
 {
     for(unsigned i=0; i<vec.size(); i++)
-        cout << "vec[" << i << "] = " << vec[i] << endl;
+        cout << prefix << "[" << i << "] = " << vec[i] << endl;
+}
+
+void edmonds_karp(Graph& flow, const Graph& capacities, int src_id, int dst_id)
+{
+    while(true)
+    {
+        Graph res_net = residual_net(flow, capacities);
+        BFSResults bfs_res = bfs(res_net, src_id);
+
+        if(bfs_res.pi[dst_id] == NONE)
+            break;
+
+        augment_flow(flow, res_net, bfs_res.pi, src_id, dst_id);
+    }
+}
+
+int flow_val(const Graph& flow, int src_id)
+{
+    int val = 0;
+
+    for(int i=0; i<flow.n_nodes(); i++)
+        val -= flow.get_edge_cost(i, src_id);
+    for(int i=0; i<flow.n_nodes(); i++)
+        val += flow.get_edge_cost(src_id, i);
+
+    return val;
 }
 
 int main()
 {
-    Graph g(10);
+    Graph flow(6);
+    Graph cap(6);
 
-    g.add_edge(1, 2, 1);
-    g.add_edge(1, 4, 3);
-    g.add_edge(2, 1, 0);
-    g.add_edge(1, 3, 23);
-    g.add_edge(2, 8, 23);
-    //g.del_edge(1, 2);
+    cap.add_edge(0, 1, 16);
+    cap.add_edge(0, 2, 13);
+    cap.add_edge(1, 3, 12);
+    cap.add_edge(2, 1, 4);
+    cap.add_edge(2, 4, 14);
+    cap.add_edge(3, 2, 9);
+    cap.add_edge(3, 5, 20);
+    cap.add_edge(4, 3, 7);
+    cap.add_edge(4, 5, 4);
 
-    adj_list_it_t it;
-    for(it=g.adj_list_begin(1); it!=g.adj_list_end(1); ++it)
-    {
-        cout << (*it).first << ", " << (*it).second << endl;
-    }
-    cout << g.has_edge(1, 2) << endl;
-    cout << g.has_edge(2, 2) << endl;
-    cout << g.has_edge(2, 1) << endl;
-    cout << g.has_edge(4, 6) << endl;
+    cout << "caps:" << endl;
+    cap.print();
+    cout << "flow:" << endl;
+    flow.print();
 
-    g.print();
-    BFSResults bfs_res = bfs(g, 1);
-    cout << "pi:" << endl;
-    print_vec(bfs_res.pi);
-    cout << "dists:" << endl;
-    print_vec(bfs_res.dists);
+    cout << "running max flow..." << endl;
+    edmonds_karp(flow, cap, 0, 5);
+
+    cout << "flow:" << endl;
+    flow.print();
+    cout << "val: " << flow_val(flow, 0) << endl;
 
     return 0;
 }

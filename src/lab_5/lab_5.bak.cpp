@@ -14,8 +14,6 @@ using namespace std;
 //character for alpha sector
 #define ALPHA_CHR '#'
 
-#define abs(x) ((x < 0)?(-x):x)
-
 //type for adjacency list iterator
 typedef list<pair<int, int> >::const_iterator adj_list_it_t;
 
@@ -191,7 +189,7 @@ BFSResults bfs(const Graph& graph, int src_id)
     return res;
 }
 
-Graph residual_net(const Graph& flow, const Graph& caps)
+Graph residual_net(Graph& flow, const Graph& caps)
 {
     Graph res_net = Graph(flow.n_nodes());
 
@@ -215,12 +213,10 @@ Graph residual_net(const Graph& flow, const Graph& caps)
 }
 
 int residual_capacity(const Graph& res_net,
-    const vector<int>& pi, int src_id, int dst_id)
+    vector<int> pi, int src_id, int dst_id)
 {
     int v_id = dst_id;
-    int res_cap = res_net.get_edge_cost(pi[v_id], v_id);
-
-    //cout << "res_cap: src=" << src_id << ", dst=" << dst_id << "\n";
+    int res_cap = res_net.get_edge_cost(pi[dst_id], dst_id);
 
     //getting residual capacity
     for(v_id=pi[v_id]; v_id!=src_id; v_id=pi[v_id])
@@ -228,12 +224,36 @@ int residual_capacity(const Graph& res_net,
         int cap = res_net.get_edge_cost(pi[v_id], v_id);
         if(cap < res_cap)
             res_cap = cap;
-
-     //   cout << "\tv_id=" << v_id << ", pi[v_id]=" << pi[v_id] <<
-      //      ", cap=" << cap << ", res_cap=" << res_cap << endl;
     }
 
     return res_cap;
+}
+
+//assumes there is such path.
+void augment_flow(Graph& flow, const Graph& res_net,
+        const vector<int> pi, int src_id, int dst_id)
+{
+    int res_cap;
+
+    //getting residual capacity
+    res_cap = residual_capacity(res_net, pi, src_id, dst_id);
+
+    for(int v_id=dst_id; v_id!=src_id; v_id=pi[v_id])
+    {
+        int u_id = pi[v_id];
+        int curr_flow;
+        bool rev = false;
+
+        if(flow.has_edge(v_id, u_id))
+        {
+            swap(&u_id, &v_id);
+            rev = true;
+        }
+
+        curr_flow = flow.get_edge_cost(u_id, v_id);
+        flow.del_edge(u_id, v_id);
+        flow.add_edge(u_id, v_id, curr_flow + (rev?(-res_cap):res_cap));
+    }
 }
 
 template<class tp>
@@ -241,51 +261,6 @@ void print_vec(const vector<tp> vec, const string& prefix="")
 {
     for(unsigned i=0; i<vec.size(); i++)
         cout << prefix << "[" << i << "] = " << vec[i] << endl;
-}
-
-
-//assumes there is such path.
-void augment_flow(Graph& flow, const Graph& res_net,
-        const vector<int>& pi, int src_id, int dst_id)
-{
-    int res_cap;
-
-    //getting residual capacity
-    res_cap = residual_capacity(res_net, pi, src_id, dst_id);
-    cout << "RESCAP:" << res_cap << endl;
-
-    for(int v_id=dst_id; v_id!=src_id; v_id=pi[v_id])
-    {
-        int u_id = pi[v_id];
-        int new_flow;
-        bool rev = false;
-
-        cout << "u_id=" << u_id << ", v_id=" << v_id << endl;
-
-        if(flow.has_edge(v_id, u_id))
-        {
-            //swap(&u_id, &v_id);
-            rev = true;
-            cout << "\tREV. u_id=" << u_id << ", v_id=" << v_id << endl;
-        }
-
-        //new_flow = flow.get_edge_cost(u_id, v_id) + (rev?(-res_cap):res_cap);
-        if(rev)
-            new_flow = flow.get_edge_cost(v_id, u_id) - res_cap;
-        else
-            new_flow = flow.get_edge_cost(u_id, v_id) + res_cap;
-
-        flow.del_edge(rev?v_id:u_id, rev?u_id:v_id);
-
-        cout << "\trev=" << rev << ", new_flow=" << new_flow << endl;
-        if(new_flow == -1)
-        {
-            cout << "\twow...\n";
-            cout << "\tEYB)SS\n", print_vec(pi, "pi");
-        }
-        if(new_flow > 0)
-            flow.add_edge(rev?v_id:u_id, rev?u_id:v_id, new_flow);
-    }
 }
 
 template<class tp>
@@ -301,27 +276,14 @@ void print_mat(const vector<vector<tp> > mat)
 
 void edmonds_karp(Graph& flow, const Graph& capacities, int src_id, int dst_id)
 {
-    int iter=0;
     while(true)
     {
         Graph res_net = residual_net(flow, capacities);
         BFSResults bfs_res = bfs(res_net, src_id);
 
-        cout << "ITER " << iter << ":\n";
-        cout << "caps:\n";
-        capacities.print();
-        cout << "flow:\n";
-        flow.print();
-        cout << "res_new:\n";
-        res_net.print();
-        if(iter == 4)
-            cout << "PI:\n", print_vec(bfs_res.pi);
-        iter++;
-
         if(bfs_res.pi[dst_id] == NONE)
             break;
 
-        if(iter == 4) cout << "AUGMENTING FLOW...\n";
         augment_flow(flow, res_net, bfs_res.pi, src_id, dst_id);
     }
 }
@@ -391,8 +353,8 @@ bool kernel(const vector<vector<bool> >& mat, int i1, int j1, int i2, int j2)
 {
     int ignore_1 = (j2 > j1)?RIGHT:((j2 < j1)?LEFT:((i2 < i1)?UPPER:LOWER));
 
-    //if(!(mat[i1][j1] && mat[i2][j2]))
-     //   return false;
+    if(!(mat[i1][j1] && mat[i2][j2]))
+        return false;
 
     bool around_1 = around(mat, i1, j1, ignore_1);
     bool around_2 = around(mat, i2, j2, mirror(ignore_1));
@@ -400,78 +362,107 @@ bool kernel(const vector<vector<bool> >& mat, int i1, int j1, int i2, int j2)
     return !(around_1 && around_2);
 }
 
-#define out_of_bounds(mat, i, j) ((i < 0) || (i >= (int)mat.size()) ||\
-    (j < 0) || (j >= (int)mat[i].size()))
-
 Graph reduce(const vector<vector<bool> >& mat)
 {
     int n_true=0;
     vector<vector<int> > map = map_mat(mat, &n_true);
-    int g_size = 2*(n_true + 1);
-    Graph graph(g_size);
-    int trues = 0;
+    Graph graph(n_true + 2);
+    int dst_id = n_true + 1;
 
     //building graph
+    cout << "start:" << endl;
+    graph.print();
+
     for(int i=0; i<n_true; i++)
-        graph.add_edge(0, i+1, 1);
+        graph.add_edge(0, i+1, 1000);
+
+    cout << "fst transform:" << endl;
+    graph.print();
 
     for(int i=0; i<(int)mat.size(); i++)
         for(int j=0; j<(int)mat[i].size(); j++)
         {
-            int cap = 0;
-
             if(!mat[i][j])
                 continue;
 
-            for(int i_shift=-1; i_shift<2; i_shift++)
-                for(int j_shift=-1; j_shift<2; j_shift++)
+            cout << "on mat[" << i << "][" << j << "] = " << mat[i][j] << endl;
+            if(left_true(mat, i, j))
+            {
+                if(!(graph.adj_list_size(1 + map[i][j]) > 0 ||
+                    graph.adj_list_size(1 + map[i][j-1]) > 0))
                 {
-                    int i2 = i + i_shift;
-                    int j2 = j + j_shift;
-
-                    if(abs(i_shift) == abs(j_shift))
-                        continue;
-                    if(out_of_bounds(mat, i2, j2))
-                        continue;
-
-                    if(mat[i2][j2])
-                    {
-                        cout << "anal (" << i << ", " << j << "), (" <<
-                            i2 << ", " << j2 << "): ";
-                        cout << 1+map[i][j] << ", " << 1+n_true+map[i2][j2] << "\n";
-                        graph.add_edge(1+map[i][j], 1+n_true+map[i2][j2], 1);
-                        cap++;
-                    }
+                    cout << "\tLEFT" << endl;
+                    graph.add_node();
+                    graph.add_edge(1 + map[i][j], dst_id, 1);
+                    graph.add_edge(1 + map[i][j-1], dst_id, 1);
+                    dst_id++;
                 }
-
-            graph.add_edge(1+n_true+trues, graph.n_nodes()-1, 1);
-            trues++;
+            }
+            if(right_true(mat, i, j))
+            {
+                if(!(graph.adj_list_size(1 + map[i][j]) > 0 ||
+                    graph.adj_list_size(1 + map[i][j+1]) > 0))
+                {
+                    cout << "\tRIGHT" << endl;
+                    graph.add_node();
+                    graph.add_edge(1 + map[i][j], dst_id, 1);
+                    graph.add_edge(1 + map[i][j+1], dst_id, 1);
+                    dst_id++;
+                }
+            }
+            if(upper_true(mat, i, j))
+            {
+                if(!(graph.adj_list_size(1 + map[i][j]) > 0 ||
+                    graph.adj_list_size(1 + map[i-1][j]) > 0))
+                {
+                    cout << "\tUP" << endl;
+                    graph.add_node();
+                    graph.add_edge(1 + map[i][j], dst_id, 1);
+                    graph.add_edge(1 + map[i-1][j], dst_id, 1);
+                    dst_id++;
+                }
+            }
+            if(lower_true(mat, i, j))
+            {
+                if(!(graph.adj_list_size(1 + map[i][j]) > 0 ||
+                    graph.adj_list_size(1 + map[i+1][j]) > 0))
+                {
+                    cout << "\tDOWN" << endl;
+                    graph.add_node();
+                    graph.add_edge(1 + map[i][j], dst_id, 1);
+                    graph.add_edge(1 + map[i+1][j], dst_id, 1);
+                    dst_id++;
+                }
+            }
         }
+
+    for(int i=n_true+1; i<graph.n_nodes()-1; i++)
+        graph.add_edge(i, graph.n_nodes()-1, 1);
+
+    cout << "snd transform:" << endl;
+    graph.print();
+
+
+    cout << "final transform:" << endl;
+    graph.print();
 
     return graph;
 }
 
 int sol_to_sol(const Graph& flow, const Graph& cap)
 {
-    int n_trues;
-    int sol=0;
-    int sol2=0;
+    int root_alone=0, sol=0;
     vector<int> alphas;
 
-    n_trues = (flow.n_nodes() - 2)/2;
+    for(int v_id=0; v_id<flow.n_nodes(); v_id++)
+        if(cap.has_edge(0, v_id))
+            alphas.push_back(v_id);
 
-    for(int u_id=1; u_id<1+n_trues; u_id++)
-    {
-        for(int v_id=1+n_trues; v_id<1+2*n_trues; v_id++)
-        {
-            if(flow.has_edge(u_id, v_id) && flow.has_edge(v_id-n_trues, u_id+n_trues))
-                sol++;
-            else if(flow.has_edge(u_id, v_id))
-                sol2++;
-        }
-    }
+    for(int i=0; i<(int)alphas.size(); i++)
+        if(flow.adj_list_size(alphas[i]) != cap.adj_list_size(alphas[i]))
+            sol++;
 
-    return sol/2 + sol2;
+    return sol;
 }
 
 void solve()

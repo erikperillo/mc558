@@ -252,7 +252,7 @@ void augment_flow(Graph& flow, const Graph& res_net,
 
     //getting residual capacity
     res_cap = residual_capacity(res_net, pi, src_id, dst_id);
-    cout << "RESCAP:" << res_cap << endl;
+    //cout << "END RESCAP:" << res_cap << endl;
 
     for(int v_id=dst_id; v_id!=src_id; v_id=pi[v_id])
     {
@@ -260,31 +260,26 @@ void augment_flow(Graph& flow, const Graph& res_net,
         int new_flow;
         bool rev = false;
 
-        cout << "u_id=" << u_id << ", v_id=" << v_id << endl;
+        //cout << "u_id=" << u_id << ", v_id=" << v_id << endl;
 
         if(flow.has_edge(v_id, u_id))
         {
-            //swap(&u_id, &v_id);
+            swap(&u_id, &v_id);
             rev = true;
-            cout << "\tREV. u_id=" << u_id << ", v_id=" << v_id << endl;
+            //cout << "REV. u_id=" << u_id << ", v_id=" << v_id << endl;
         }
 
-        //new_flow = flow.get_edge_cost(u_id, v_id) + (rev?(-res_cap):res_cap);
-        if(rev)
-            new_flow = flow.get_edge_cost(v_id, u_id) - res_cap;
-        else
-            new_flow = flow.get_edge_cost(u_id, v_id) + res_cap;
+        new_flow = flow.get_edge_cost(u_id, v_id) + (rev?(-res_cap):res_cap);
+        flow.del_edge(u_id, v_id);
 
-        flow.del_edge(rev?v_id:u_id, rev?u_id:v_id);
-
-        cout << "\trev=" << rev << ", new_flow=" << new_flow << endl;
+        //cout << "\trev=" << rev << ", new_flow=" << new_flow << endl;
         if(new_flow == -1)
         {
-            cout << "\twow...\n";
-            cout << "\tEYB)SS\n", print_vec(pi, "pi");
+            cout << "wow...\n";
+            cout << "EYB)SS\n", print_vec(pi, "pi");
         }
         if(new_flow > 0)
-            flow.add_edge(rev?v_id:u_id, rev?u_id:v_id, new_flow);
+            flow.add_edge(u_id, v_id, new_flow);
     }
 }
 
@@ -321,7 +316,6 @@ void edmonds_karp(Graph& flow, const Graph& capacities, int src_id, int dst_id)
         if(bfs_res.pi[dst_id] == NONE)
             break;
 
-        if(iter == 4) cout << "AUGMENTING FLOW...\n";
         augment_flow(flow, res_net, bfs_res.pi, src_id, dst_id);
     }
 }
@@ -453,25 +447,18 @@ Graph reduce(const vector<vector<bool> >& mat)
 
 int sol_to_sol(const Graph& flow, const Graph& cap)
 {
-    int n_trues;
-    int sol=0;
-    int sol2=0;
+    int root_alone=0, sol=0;
     vector<int> alphas;
 
-    n_trues = (flow.n_nodes() - 2)/2;
+    for(int v_id=0; v_id<flow.n_nodes(); v_id++)
+        if(cap.has_edge(0, v_id))
+            alphas.push_back(v_id);
 
-    for(int u_id=1; u_id<1+n_trues; u_id++)
-    {
-        for(int v_id=1+n_trues; v_id<1+2*n_trues; v_id++)
-        {
-            if(flow.has_edge(u_id, v_id) && flow.has_edge(v_id-n_trues, u_id+n_trues))
-                sol++;
-            else if(flow.has_edge(u_id, v_id))
-                sol2++;
-        }
-    }
+    for(int i=0; i<(int)alphas.size(); i++)
+        if(flow.adj_list_size(alphas[i]) != cap.adj_list_size(alphas[i]))
+            sol++;
 
-    return sol/2 + sol2;
+    return sol;
 }
 
 void solve()

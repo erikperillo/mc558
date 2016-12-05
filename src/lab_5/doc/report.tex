@@ -1,0 +1,121 @@
+\documentclass[7pt]{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=biber]{biblatex}
+\usepackage{csquotes}
+%\usepackage{docmute}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage[bindingoffset=0.0in,%
+            left=0.9in,right=0.9in,top=0.5in,bottom=0.5in,%
+            voffset=0in,footskip=1.5in]{geometry}
+\usepackage{algorithm}
+\usepackage{titling}
+\usepackage[noend]{algpseudocode}
+\usepackage[T1]{fontenc}
+
+\addbibresource{report.bib}
+
+\newcommand{\fromeng}[1]{\footnote{do inglês: \textit{#1}}}
+\newcommand{\tit}[1]{\textit{#1}}
+\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+%\setlength{\intextsep}{1.5pt}
+%\setlength{\textfloatsep}{-1in}
+
+\begin{document}
+
+%\newgeometry{margin=1in}
+
+\author{Erik Perillo, RA135582}
+\date{\today}
+\title{%\vspace{-2cm}%
+	{\small MC558 - Projeto e análise de algoritmos II - Unicamp}\\
+	{\Large Laboratório 5 - Galeria de arte}}
+%\subtitle{Lel}
+\maketitle\vspace{-0.5cm}
+\posttitle{\par\end{center}}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+\section{Abordagem}
+O problema a se resolver é o de usar o mínimo número possível de guardas
+para cobrir regiões arbitrárias quadriculadas.
+
+Pode-se reduzir o problema ao problema do emparelhamento máximo:
+Nós da bipartição são pontos onde deve-se ter um vigilante.
+Para cada dois pontos adjacentes, há um nó para cada lado da bipartição.
+As direções de adjacências garantem que o grafo resultante nunca tenha
+ciclos ímpares e, portanto, sempre há como montar uma bipartição e
+temos uma transformação injetora.
+
+Achar um emparelhamento máximo nesse esquema é equivalente a achar o máximo
+número possível de quadrados que não há ninguém mas são vigiados por outro,
+o que dá então o número mínimo possível de guardas a se usar: é o número
+máximo (área da região) menos o número de quadrados poupados que conseguimos.
+
+O pseudo algoritmo abaixo explica de forma abstraida a transformação: Primeiro
+da matriz das regiões para uma bipartição e depois para uma rede de fluxo.
+\begin{algorithm}
+\caption{}\label{Galeria}
+\begin{algorithmic}[1]
+    \Procedure{TRANSFORM}{M}
+    \State $(S, T) \gets bipartition(M)$
+    \State $C \gets s \cup t$
+    \For{$(x, y)~in~adjacencies(M)$}
+        \State $(u, v) \gets map\_to\_edge(M, x, y)$
+        \If{$v \in S$}
+            \State $swap(u, v)$
+        \EndIf
+        \State $C \gets C \cup (s, u)$
+        \State $C \gets C \cup (u, v)$
+        \State $C \gets C \cup (v, t)$
+	\EndFor
+    \State $G \gets V(C)$\\
+    \Return $(G, C, s, t)$
+    \EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{multicols}{2}
+
+\section{Complexidade}
+O grafo foi implementado como uma lista de adjacências.
+As regiões a serem vigiadas foram implementadas como uma matriz binária, com
+1 se e só se o ponto $(i, j)$ é uma região alfa.
+Seja $V$ o número de vértices de um grafo e $E$ o número de arestas do mesmo e
+$l$ o número de linhas e $c$ o número de colunas da matriz das regiões.
+
+A linha 2 é simbólica pois na prática pode-se determinar qual o lado
+da bipartição de um nó só com valores booleanos.
+O \tit{loop} da linha 4 é basicamente uma iteração sobre cada ponto da matriz,
+checando ao seu redor para adjacências. O mapeamento de um ponto para um nó
+da linha 5 é feito em tempo constante com uma matriz de mapeamento.
+As linhas 8 e 9 checam se as arestas já estão no grafo de capacidades
+antes de adicioná-las. Isso é feito em tempo constante com um vetor.
+Assim, a transformação leva tempo $O(lc)$.
+A rede retornada é a entrada do algoritmo \ttt{EDMONDS-KARP} que foi
+implementado como esperado com \ttt{BFS} e então leva tempo $O(VE^2)$
+com $V, E$ das capacidades.
+Para se obter a resposta do problema original a partir do fluxo máximo,
+simplesmente calcula-se: $n = |C| - 2 - |f|$, onde $f, C$ são o fluxo e
+capacidade, respectivamente. O grafo de capacidades é construído de tal
+forma que ele tenha $lc + 2$ nós: pontos que não são adjacências simplesmente
+não se conectam a nada. Isso leva tempo constante.
+Assim, o tempo final do algoritmo é $O(lc + VE^2) = O(l^3c^3)$ pois
+$V, E = O(lc)$.
+
+\printbibliography
+
+\end{multicols}
+
+\end{document}

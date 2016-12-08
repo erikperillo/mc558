@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<title>Laboratório 06</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://sindresorhus.com/github-markdown-css/github-markdown.css">
+	<style>
+	    .markdown-body {
+		box-sizing: border-box;
+		min-width: 200px;
+		max-width: 980px;
+		margin: 0 auto;
+		padding: 45px;
+	    }
+	    .markdown-body h6 { margin-bottom: 0; }
+	    .markdown-body h6 + ul li {
+		display: inline-block;
+		width: 100%;
+		max-width: 426px;
+		vertical-align: top;
+	    }
+	</style>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ['\\(','\\)'] ]
+        }
+      });
+    </script>
+
+    <script type="text/javascript" async
+        src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+
+
+</head>
+<body>
+	<article class="markdown-body">
+<h3>
+<a id="user-content-instituto-de-computação---unicamp" class="anchor" href="#instituto-de-computa%C3%A7%C3%A3o---unicamp" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Instituto de Computação - Unicamp</h3>
+
+<h3>
+<a id="user-content-mc558---projeto-e-análise-de-algoritmos-ii" class="anchor" href="#mc558---projeto-e-an%C3%A1lise-de-algoritmos-ii" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>MC558 - Projeto e Análise de Algoritmos II</h3>
+
+<h1>
+<a id="user-content-laboratório-id---title" class="anchor" href="#laborat%C3%B3rio-id---title" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Laboratório 06 - Destilaria</h1>
+
+<p>Prazo de entrega: <strong>10/12/2016 às 23:59:59</strong>  </p>
+
+<p><em>Professor:</em> Orlando Lee<br>
+<em>Monitores:</em> Guilherme Bueno Andrade (PAD) e  Maycon Sambinelli (PED)</p>
+
+<hr>
+
+<h2>
+<a id="user-content-descrição" class="anchor" href="#descri%C3%A7%C3%A3o" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Descrição</h2>
+
+<p>A Chell é uma empresa bebidas que produz uísque e vodka. Para planejar
+a produção em sua fábrica em 2017, a Chell contratou uma consultoria
+que estimou que haverá uma demanda de $x_i$ litros de uísque e $y_i$
+litros de vodka no $i$-ésimo mês. Devido a mudanças que estão
+planejadas ao longo de 2017 em sua cadeia de produção, a Chell prevê
+que o custo de fabricação de uísque e de vodka será de $a_i$ e $b_i$
+reais por litro, respectivamente, durante o $i$-ésimo mês. Ela também
+sabe que o volume total de bebida produzida sofre uma certa variação
+ao longo dos meses, devido a férias de funcionários, feriados e
+recessos. Desta forma, ela sabe que conseguirá produzir no máximo
+$p_i$ litros de bebida no $i$-ésimo mês (somando a produção de uísque
+e de vodka). As bebidas produzidas são armazenadas em barris em um
+depósito. A Chell sabe que o seu depósito tem capacidade para
+armazenar até $A$ litros de bebida. Logo, ela sabe que não pode
+produzir mais bebida do que é capaz de estocar. Além disso, a Chell
+tenta evitar estocar bebida em seu armazém, já que isso irá encarecer o custo de 
+produção pois gera um custo de armazenamento de  $k$ reais por mês por
+litro, isto é, armazenar um litro de bebida por um mês custa $k$
+reais.</p>
+
+<p>A Chell contratou você para escalonar a sua produção para o ano de
+2017 de forma que o custo total da produção (custo de fabricação +
+armazenamento) seja minimizado.</p>
+
+<h3>
+<a id="user-content-observações" class="anchor" href="#observa%C3%A7%C3%B5es" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Observações</h3>
+
+<ul>
+<li><p>Se um litro de bebida foi produzido em janeiro e consumido em
+janeiro, então este litro não precisa ser armazenado no depósito e
+por isso não agrega o custo de armazenamento ao seu custo de
+produção.</p></li>
+<li><p>Como o SuSy não da suporte ao uso do Lemon + GLPK, não será possível
+executar os testes diretamente no SuSy. Assim, usaremos o SuSy
+apenas para a submissão dos trabalhos e a correção será feita
+posteriormente em uma máquina preparada para isso. Para checar se o
+seu programa está correto antes de enviá-lo, você terá que comparar
+as entradas e saídas do seu programa com o gabarito fornecido no seu
+próprio computador.</p></li>
+</ul>
+
+<h3>
+<a id="user-content-entrada" class="anchor" href="#entrada" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Entrada</h3>
+
+<p>Cada arquivo de entrada possui diversos casos de teste. A primeira
+linha da entrada consiste em um inteiro $t$ $(1 \leq t \leq 1000)$ que
+determina o número de casos de teste da entrada. A primeira linha de
+cada caso de teste consiste em dois números separados por espaços: $A$
+$(0 \leq A \leq 9999999)$, a capacidade de armazenamento de bebida do
+depósito em litros, e $k$ $(0 \leq k \leq 50)$, o custo em reais para
+se armazenar um litro de bebida por um mês. A segunda linha consiste
+em doze números inteiros $x_i$ $(0 \leq x_i \leq 9999999)$, separados
+por espaços, que representam as demandas mensais de litros de
+uísque. A terceira linha consiste em doze números inteiros $y_i$ $(0
+\leq y_i \leq 9999999)$, separados por espaços, que representam as
+demandas mensais de litros de vodka. A quarta linha consiste em doze
+números $a_i$ $(0 \leq a_i \leq 500)$, separados por espaços, que
+representam o custo mensal de produzir um litro de uísque.  A quinta
+linha consiste em doze números $b_i$ $(0 \leq b_i \leq 500)$,
+separados por espaços, que representam o custo mensal de produzir um
+litro de vodka.  A sexta linha consiste em doze números inteiros $p_i$
+$(0 \leq p_i \leq 9999999)$, separados por espaços, que representam a
+quantidade máxima de litros de bebida que podem ser produzidas
+mensalmente.</p>
+
+<h3>
+<a id="user-content-saída" class="anchor" href="#sa%C3%ADda" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Saída</h3>
+
+<p>Quando existe um escalonamento possível, a saída do caso de teste consiste em onze linhas que seguem o seguinte padrão: </p>
+
+<pre><code>Custo total de producao: z
+mes 1: produzir x litros de uisque e y litros de vodka
+mes 2: produzir x litros de uisque e y litros de vodka
+mes 3: produzir x litros de uisque e y litros de vodka
+mes 4: produzir x litros de uisque e y litros de vodka
+mes 5: produzir x litros de uisque e y litros de vodka
+mes 6: produzir x litros de uisque e y litros de vodka
+mes 7: produzir x litros de uisque e y litros de vodka
+mes 8: produzir x litros de uisque e y litros de vodka
+mes 9: produzir x litros de uisque e y litros de vodka
+mes 10: produzir x litros de uisque e y litros de vodka
+mes 11: produzir x litros de uisque e y litros de vodka
+mes 12: produzir x litros de uisque e y litros de vodka
+</code></pre>
+
+<p>Onde z deve ser substituído pelo custo total de produção de bebidas no
+ano de 2017, x e y devem ser quantidade em litros produzida de uísque
+e vodka, respectivamente, em cada mês. Todos os valores numéricos
+devem possuir precisão de uma casa decimal.</p>
+
+<p>Quando não existe um escalonamento possível, a saída consiste de uma
+única linha contendo a string sem aspas: 'Escalonamento impossivel'.</p>
+
+<h2>
+<a id="user-content-exemplos" class="anchor" href="#exemplos" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exemplos</h2>
+
+<h6>
+<a id="user-content-teste-01" class="anchor" href="#teste-01" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Teste 01</h6>
+
+<ul>
+<li>
+<p><a href="dados/arq01.in">Entrada</a></p>
+
+<pre><code>1
+150000  0.2
+10000   10000   10000   10000   30000   30000   30000   30000   30000   100000  100000  100000
+50000   50000   15000   15000   15000   15000   15000   15000   15000   50000   50000   50000
+5   5   5   5   5   5   4.5 4.5 4.5 4.5 4.5 4.5
+8.5 8.5 8.5 8.5 8.5 8.5 7   7   7   7   7   7
+120000  20000   120000  120000  40000   40000   40000   40000   130000  130000  130000  130000
+</code></pre>
+</li>
+<li>
+<p><a href="dados/arq01.res">Saída</a></p>
+
+<pre><code>Custo total de producao: 5027000.0
+mes 1: produzir 10000.0 litros de uisque e 90000.0 litros de vodka
+mes 2: produzir 10000.0 litros de uisque e 10000.0 litros de vodka
+mes 3: produzir 10000.0 litros de uisque e 15000.0 litros de vodka
+mes 4: produzir 20000.0 litros de uisque e 25000.0 litros de vodka
+mes 5: produzir 30000.0 litros de uisque e 10000.0 litros de vodka
+mes 6: produzir 30000.0 litros de uisque e 10000.0 litros de vodka
+mes 7: produzir 25000.0 litros de uisque e 15000.0 litros de vodka
+mes 8: produzir 25000.0 litros de uisque e 15000.0 litros de vodka
+mes 9: produzir 40000.0 litros de uisque e 65000.0 litros de vodka
+mes 10: produzir 90000.0 litros de uisque e 40000.0 litros de vodka
+mes 11: produzir 100000.0 litros de uisque e 30000.0 litros de vodka
+mes 12: produzir 100000.0 litros de uisque e 30000.0 litros de vodka
+</code></pre>
+</li>
+</ul>
+
+<h6>
+<a id="user-content-teste-02" class="anchor" href="#teste-02" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Teste 02</h6>
+
+<ul>
+<li>
+<p><a href="dados/arq02.in">Entrada</a></p>
+
+<pre><code>3
+1000 0.0
+1   1   1   1   1   1   1   1   1   1   0   0
+1   1   1   1   1   1   1   1   1   1   0   0
+0   5   5   5   5   5   4.5 4.5 4.5 4.5 4.5 4.5
+0   8.5 8.5 8.5 8.5 8.5 7   7   7   7   7   7
+100 20000   120000  120000  40000   40000   40000   40000   130000  130000  130000  130000
+1000 1.0
+1   1   1   1   1   1   1   1   1   1   0   0
+1   1   1   1   1   1   1   1   1   1   0   0
+0   5   5   5   5   5   4.5 4.5 4.5 4.5 4.5 4.5
+0   8.5 8.5 8.5 8.5 8.5 7   7   7   7   7   7
+100 0   0   0   0   0   0   0   0   0   0   0
+1000 1.0
+2   4   0   0   0   0   0   0   0   0   0   0
+0   0   0   0   0   0   0   0   0   0   0   0
+5   3   5   5   5   5   4.5 4.5 4.5 4.5 4.5 4.5
+0   8.5 8.5 8.5 8.5 8.5 7   7   7   7   7   7
+4   2   0   0   0   0   0   0   0   0   0   0
+</code></pre>
+</li>
+<li>
+<p><a href="dados/arq02.res">Saída</a></p>
+
+<pre><code>Custo total de producao: 0.0
+mes 1: produzir 10.0 litros de uisque e 10.0 litros de vodka
+mes 2: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 3: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 4: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 5: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 6: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 7: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 8: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 9: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 10: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 11: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 12: produzir 0.0 litros de uisque e 0.0 litros de vodka
+Custo total de producao: 90.0
+mes 1: produzir 10.0 litros de uisque e 10.0 litros de vodka
+mes 2: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 3: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 4: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 5: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 6: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 7: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 8: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 9: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 10: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 11: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 12: produzir 0.0 litros de uisque e 0.0 litros de vodka
+Custo total de producao: 28.0
+mes 1: produzir 4.0 litros de uisque e 0.0 litros de vodka
+mes 2: produzir 2.0 litros de uisque e 0.0 litros de vodka
+mes 3: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 4: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 5: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 6: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 7: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 8: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 9: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 10: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 11: produzir 0.0 litros de uisque e 0.0 litros de vodka
+mes 12: produzir 0.0 litros de uisque e 0.0 litros de vodka
+</code></pre>
+</li>
+</ul>
+
+<p>Para mais exemplos, consulte os <a href="dados/testes.html">testes abertos no Susy</a>.</p>
+
+<h2>
+<a id="user-content-restrições" class="anchor" href="#restri%C3%A7%C3%B5es" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Restrições</h2>
+
+<p>O seu programa deve atender as seguintes restrições:</p>
+
+<ul>
+<li>Você deve utilizar o Lemon para resolver o problema.</li>
+</ul>
+
+<h2>
+<a id="user-content-relatório" class="anchor" href="#relat%C3%B3rio" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Relatório</h2>
+
+<p>Além do programa, você deve escrever um pequeno relatório explicando a ideia
+utilizada para resolver o problema e fazer a análise de complexidade de tempo do
+seu programa (não é necessário provar a corretude do algoritmo). O relatório
+deve conter no máximo uma página, deve estar no formato pdf e deve ser submetido
+pelo SuSy.</p>
+
+<h2>
+<a id="user-content-critérios-de-avaliação" class="anchor" href="#crit%C3%A9rios-de-avalia%C3%A7%C3%A3o" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Critérios de avaliação</h2>
+
+<p>A nota máxima do laboratório é 10 e é dada pela seguinte formula:</p>
+
+<p>\[
+    NF = NP + NR - PE
+\]</p>
+
+<p>Onde:</p>
+
+<ul>
+<li>$NF$ é a nota final.</li>
+<li>$NP$ é a nota do programa. Esse valor é igual a 7 se o programa passou em
+todos os casos de teste do SuSy. No caso do programa ter falhado em um ou mais
+casos de teste, temos que $NF = 0$ (Note que neste caso é a nota final que
+é igual a zero e não a nota do programa).</li>
+<li>$NR$ é a nota do relatório (3 pontos).</li>
+<li>$PE$ é a soma das penalidades aplicadas ao programa. O valor das
+penalidades é apresentado na tabela abaixo.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Valor</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-2</td>
+<td>Programa com problemas relevantes de qualidade de código (Falta de comentários, nomes não significativos e etc)</td>
+</tr>
+<tr>
+<td>-3</td>
+<td>Programa que violar alguma das restrições apresentadas na seção <em>Restrições</em>
+</td>
+</tr>
+</tbody>
+</table>
+
+<h2>
+<a id="user-content-observações-1" class="anchor" href="#observa%C3%A7%C3%B5es-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Observações</h2>
+
+<ul>
+<li>O número máximo de submissões é <strong>15</strong>;</li>
+<li>O seu usuário no SuSy é o seu número de RA (apenas números) e a sua senha é a
+sua senha da DAC.</li>
+<li>Indente corretamente o seu código e inclua comentários no decorrer do seu programa.</li>
+<li>O SuSy utiliza as seguintes flags de compilação: <code>-std=c99 -pedantic -Wall
+-lm</code> para a linguagem C e <code>-ansi -pedantic -Wall -lm</code> para a linguagem C++.</li>
+<li>Para efeito de avaliação será levado em conta apenas a última submissão no
+SuSy. Arquivos fontes mandados por email não serão levados em conta.</li>
+</ul>
+
+<h2>
+<a id="user-content-plágio" class="anchor" href="#pl%C3%A1gio" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Plágio</h2>
+
+<p>O reaproveitamento de código da Web ou de colegas é considerado plágio e será
+tratado de acordo com os critérios estabelecidos.</p>
+	</article>
+</body>
+</html>
